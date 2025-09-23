@@ -1,0 +1,1 @@
+Minimal Next.js marketing shell. Deploy on Vercel.
