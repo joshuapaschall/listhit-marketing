@@ -2,12 +2,6 @@
   "redirects": [
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "www.listhit.io" }],
-      "destination": "https://listhit.io/$1",
-      "permanent": true
-    },
-    {
-      "source": "/(.*)",
       "has": [{ "type": "host", "value": "listhit-marketing.vercel.app" }],
       "destination": "https://listhit.io/$1",
       "permanent": true
