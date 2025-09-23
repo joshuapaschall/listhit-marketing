@@ -1,1 +1,0 @@
-export default function Home(){return <main style={{padding:40}}><h1>ListHit Marketing</h1><p>Launch App → <a href="https://app.listhit.io">app.listhit.io</a></p></main>}

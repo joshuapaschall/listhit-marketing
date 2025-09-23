@@ -1,1 +1,0 @@
-export default function Page(){ if(typeof window!=='undefined'){ window.location.href='https://app.listhit.io'; } return null }
