@@ -1,203 +1,227 @@
-// app/page.tsx
-import Image from "next/image";
+import { Button } from "../components/Button";
+import { Container } from "../components/Container";
+
+const features = [
+  {
+    title: "Purpose-built buyer lists",
+    body: "Organize buyers by market, price band, and preferences so each update stays relevant and welcome.",
+    icon: "📂",
+  },
+  {
+    title: "Permission-based messaging",
+    body: "Send opt-in alerts, assignments, and account notifications with unsubscribe and complaint handling baked in.",
+    icon: "✅",
+  },
+  {
+    title: "Reliable deliverability",
+    body: "Bounce monitoring, complaint logging, and rate-aware sending keep your updates compliant with SES policies.",
+    icon: "📡",
+  },
+];
+
+const complianceItems = [
+  "Only send to buyers who have requested updates or given explicit permission.",
+  "Honor unsubscribe requests automatically and provide a clear opt-out path.",
+  "Monitor bounces and complaints and remove problematic addresses quickly.",
+  "Never use purchased, scraped, or third-party lists without consent.",
+];
+
+const stats = [
+  { label: "Deliverability focus", value: "SES-ready" },
+  { label: "Messaging type", value: "Transactional updates" },
+  { label: "Opt-out handling", value: "Built-in" },
+];
 
 export default function Home() {
   return (
-    <main style={styles.page}>
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.brand}>
-          <Image src="/logo.png" alt="ListHit logo" width={36} height={36} />
-          <strong style={styles.brandText}>ListHit</strong>
-        </div>
-        <nav style={styles.nav}>
-          <a href="#features" style={styles.navLink}>Features</a>
-          <a href="#pricing" style={styles.navLink}>Pricing</a>
-          <a href="#contact" style={styles.navLink}>Contact</a>
-          <a href="https://app.listhit.io" style={styles.navCta}>Launch App</a>
-        </nav>
-      </header>
-
-      {/* Hero */}
-      <section style={styles.hero}>
-        <h1 style={styles.h1}>
-          Dispo deals faster with <span style={styles.accent}>ListHit</span>
-        </h1>
-        <p style={styles.sub}>
-          A focused dispositions workspace for real estate investors:
-          manage buyers, market properties, and close more assignments—faster.
-        </p>
-
-        <div style={styles.ctaRow}>
-          <a href="https://app.listhit.io" style={styles.ctaPrimary}>
-            Launch App
-          </a>
-          <a href="#features" style={styles.ctaGhost}>
-            See Features
-          </a>
-        </div>
+    <>
+      <section className="hero">
+        <Container>
+          <div className="hero-grid">
+            <div>
+              <div className="eyebrow">Transactional messaging for real estate</div>
+              <h1 style={{ marginTop: 14, fontSize: 44 }}>
+                Keep buyers informed with compliant, permission-based updates.
+              </h1>
+              <p style={{ maxWidth: 620 }}>
+                ListHit helps real estate teams deliver deal announcements, account notices, and
+                important updates only to subscribers who asked for them. Built for AWS SES review
+                standards with clear consent, opt-out, and monitoring controls.
+              </p>
+              <div className="cta-row" style={{ marginTop: 18 }}>
+                <Button href="https://app.listhit.io/signup">Start free</Button>
+                <Button variant="secondary" href="/contact">
+                  Talk to us
+                </Button>
+              </div>
+              <div className="badge-list">
+                {stats.map((stat) => (
+                  <div key={stat.label} className="pill">
+                    <span className="stat-value" style={{ fontSize: 16 }}>
+                      {stat.value}
+                    </span>
+                    <span className="stat-label">{stat.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="card highlight-box" style={{ borderRadius: 20 }}>
+              <h3 style={{ marginBottom: 12 }}>Send updates with confidence</h3>
+              <ul className="list">
+                <li>Opt-in lists only—no purchased or scraped contacts.</li>
+                <li>Clear unsubscribe links and automated suppression.</li>
+                <li>Rate-aware sending tuned for transactional messages.</li>
+                <li>Delivery, bounce, and complaint logging for audits.</li>
+              </ul>
+              <div className="callout" style={{ marginTop: 16 }}>
+                <strong>Use cases:</strong>
+                <p className="muted" style={{ marginTop: 6, marginBottom: 0 }}>
+                  Property updates, offer status, closing timelines, account security notices, billing
+                  confirmations, and opted-in marketing follow-ups with consent.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Container>
       </section>
 
-      {/* Feature cards */}
-      <section id="features" style={styles.features}>
-        <div style={styles.card}>
-          <div style={styles.cardIcon}>🎯</div>
-          <h3 style={styles.cardTitle}>Targeted Buyer Matching</h3>
-          <p style={styles.cardBody}>
-            Get your deals in front of the right buyers with smart grouping,
-            tags, and saved lists tailored to your markets.
-          </p>
-        </div>
-
-        <div style={styles.card}>
-          <div style={styles.cardIcon}>📣</div>
-          <h3 style={styles.cardTitle}>Frictionless Outreach</h3>
-          <p style={styles.cardBody}>
-            One dashboard to announce new deals, track engagement, and follow up
-            without losing momentum.
-          </p>
-        </div>
-
-        <div style={styles.card}>
-          <div style={styles.cardIcon}>📈</div>
-          <h3 style={styles.cardTitle}>Closing Clarity</h3>
-          <p style={styles.cardBody}>
-            Stay on top of offers, counters, and timelines with a clean pipeline
-            built for fast assignments.
-          </p>
-        </div>
+      <section className="section">
+        <Container>
+          <div className="section-heading">
+            <div className="eyebrow">Platform</div>
+            <h2>Built for reliable, permission-based outreach.</h2>
+            <p>
+              A focused workflow that respects inboxes, keeps lists clean, and makes it easy to prove
+              compliance during SES production reviews.
+            </p>
+          </div>
+          <div className="card-grid" style={{ marginTop: 20 }}>
+            {features.map((feature) => (
+              <div key={feature.title} className="card">
+                <div className="pill" style={{ marginBottom: 10 }}>
+                  <span style={{ fontSize: 18 }}>{feature.icon}</span>
+                  <span>{feature.title}</span>
+                </div>
+                <p className="muted" style={{ marginTop: 6 }}>{feature.body}</p>
+              </div>
+            ))}
+          </div>
+        </Container>
       </section>
 
-      {/* Simple pricing teaser (optional anchor) */}
-      <section id="pricing" style={styles.pricing}>
-        <div style={styles.priceBadge}>Early Access</div>
-        <h2 style={styles.h2}>Simple, transparent pricing</h2>
-        <p style={styles.priceCopy}>
-          Pay for what helps you dispo faster. No contracts. Cancel anytime.
-        </p>
-        <a href="https://app.listhit.io" style={styles.ctaPrimary}>
-          Start Now
-        </a>
+      <section className="section">
+        <Container>
+          <div className="section-heading">
+            <div className="eyebrow">Compliance</div>
+            <h2>Respect consent, handle opt-outs, and prevent abuse.</h2>
+            <p>
+              ListHit enforces permission-based messaging. We prohibit purchased or scraped lists and
+              require verifiable consent to receive updates. Every send includes unsubscribe support and
+              automatic suppression for complaints or hard bounces.
+            </p>
+          </div>
+          <div className="two-column" style={{ marginTop: 16 }}>
+            <div className="card">
+              <h3>What we expect</h3>
+              <ul className="list">
+                {complianceItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="card">
+              <h3>Monitoring & controls</h3>
+              <ul className="list">
+                <li>Complaint and bounce monitoring with suppression rules.</li>
+                <li>Access controls for team roles and audit-friendly logs.</li>
+                <li>Data retention policies with timely removal on request.</li>
+                <li>Dedicated support for abuse reports at support@listhit.io.</li>
+              </ul>
+              <div className="callout" style={{ marginTop: 12 }}>
+                <strong>Fast resolutions.</strong>
+                <p className="muted" style={{ marginTop: 6, marginBottom: 0 }}>
+                  We respond to abuse or security reports quickly and remove non-compliant senders to
+                  protect deliverability for everyone.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Container>
       </section>
 
-      {/* Footer */}
-      <footer id="contact" style={styles.footer}>
-        <div>© {new Date().getFullYear()} ListHit. All rights reserved.</div>
-        <div style={{ opacity: 0.7 }}>
-          <a href="mailto:support@listhit.io" style={styles.footerLink}>support@listhit.io</a>
-        </div>
-      </footer>
-    </main>
+      <section className="section">
+        <Container>
+          <div className="section-heading">
+            <div className="eyebrow">Pricing</div>
+            <h2>Predictable plans for transactional messaging.</h2>
+            <p>
+              Choose the plan that fits your volume and team size. All plans include consent-based
+              sending, unsubscribe handling, and monitoring.
+            </p>
+          </div>
+          <div className="card-grid" style={{ marginTop: 20 }}>
+            <div className="card">
+              <h3>Starter</h3>
+              <p className="muted">For small teams validating workflows.</p>
+              <ul className="list">
+                <li>Up to 5,000 messages/month</li>
+                <li>Opt-in list enforcement</li>
+                <li>Unsubscribe + bounce handling</li>
+              </ul>
+              <Button href="https://app.listhit.io/signup" style={{ marginTop: 12 }}>
+                Start now
+              </Button>
+            </div>
+            <div className="card highlight-box">
+              <h3>Growth</h3>
+              <p className="muted">For active dispo teams sending frequent updates.</p>
+              <ul className="list">
+                <li>Up to 50,000 messages/month</li>
+                <li>Complaint monitoring & suppression</li>
+                <li>Team roles and audit-friendly logs</li>
+              </ul>
+              <Button href="https://app.listhit.io/signup" style={{ marginTop: 12 }}>
+                Upgrade
+              </Button>
+            </div>
+            <div className="card">
+              <h3>Scale</h3>
+              <p className="muted">For multi-market operations with custom needs.</p>
+              <ul className="list">
+                <li>Custom volume and throughput</li>
+                <li>Dedicated deliverability reviews</li>
+                <li>Priority support and onboarding</li>
+              </ul>
+              <Button href="/contact" style={{ marginTop: 12 }}>
+                Talk to us
+              </Button>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      <section className="section" style={{ paddingTop: 32 }}>
+        <Container>
+          <div className="card highlight-box">
+            <div className="two-column" style={{ alignItems: "center" }}>
+              <div>
+                <h2>Ready to show SES how you handle compliance?</h2>
+                <p>
+                  Set up your lists, send verified updates, and keep clean records of consent,
+                  unsubscribes, and complaints. ListHit makes it straightforward to demonstrate
+                  transactional-only usage.
+                </p>
+              </div>
+              <div className="cta-row" style={{ justifyContent: "flex-end" }}>
+                <Button href="https://app.listhit.io/signup">Create account</Button>
+                <Button variant="secondary" href="/contact">
+                  Ask a question
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+    </>
   );
 }
-
-// --- styles ---
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    background: "radial-gradient(1200px 600px at 20% -10%, #191919, transparent), #0b0b0b",
-    color: "white",
-    padding: "24px",
-  },
-  header: {
-    maxWidth: 1080,
-    margin: "0 auto",
-    padding: "8px 8px 0",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  brand: { display: "flex", alignItems: "center", gap: 10 },
-  brandText: { fontSize: 18, letterSpacing: 0.2 as any },
-  nav: { display: "flex", alignItems: "center", gap: 18 },
-  navLink: { color: "rgba(255,255,255,0.8)", textDecoration: "none", fontSize: 14 },
-  navCta: {
-    textDecoration: "none",
-    padding: "8px 14px",
-    borderRadius: 10,
-    background: "#e53935",
-    color: "white",
-    fontWeight: 600,
-    marginLeft: 6,
-  },
-
-  hero: {
-    maxWidth: 1080,
-    margin: "72px auto 0",
-    padding: "0 8px",
-  },
-  h1: {
-    fontSize: 56,
-    lineHeight: 1.05,
-    margin: 0,
-    letterSpacing: -0.5 as any,
-  },
-  accent: { color: "#ff4d4a" },
-  sub: { marginTop: 14, opacity: 0.8, fontSize: 18, maxWidth: 760 },
-
-  ctaRow: { display: "flex", gap: 12, marginTop: 26 },
-  ctaPrimary: {
-    background: "#e53935",
-    padding: "12px 18px",
-    borderRadius: 12,
-    color: "#fff",
-    textDecoration: "none",
-    fontWeight: 700,
-    boxShadow: "0 6px 20px rgba(229,57,53,0.35)",
-  },
-  ctaGhost: {
-    border: "1px solid rgba(255,255,255,0.18)",
-    padding: "12px 18px",
-    borderRadius: 12,
-    color: "#fff",
-    textDecoration: "none",
-  },
-
-  features: {
-    maxWidth: 1080,
-    margin: "64px auto 0",
-    padding: "0 8px",
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-    gap: 16,
-  },
-  card: {
-    background: "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: 14,
-    padding: 18,
-  },
-  cardIcon: { fontSize: 22, marginBottom: 8 },
-  cardTitle: { margin: "4px 0 4px", fontSize: 16 },
-  cardBody: { opacity: 0.8, fontSize: 14, lineHeight: 1.5 },
-
-  pricing: {
-    maxWidth: 900,
-    margin: "72px auto 0",
-    padding: "0 8px",
-    textAlign: "center" as const,
-  },
-  priceBadge: {
-    display: "inline-block",
-    fontSize: 12,
-    padding: "6px 10px",
-    borderRadius: 999,
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    marginBottom: 10,
-  },
-  h2: { margin: "6px 0 8px", fontSize: 28 },
-  priceCopy: { opacity: 0.75, marginBottom: 16 },
-
-  footer: {
-    maxWidth: 1080,
-    margin: "80px auto 20px",
-    padding: "0 8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    opacity: 0.7,
-    fontSize: 12,
-  },
-  footerLink: { color: "rgba(255,255,255,0.9)", textDecoration: "none" },
-};
