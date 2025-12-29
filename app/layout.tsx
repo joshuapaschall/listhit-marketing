@@ -6,7 +6,7 @@ import { SiteFooter } from "../components/SiteFooter";
 
 const siteName = "ListHit";
 const description =
-  "ListHit is a transactional messaging platform for real estate teams to deliver permission-based buyer updates, offers, and critical account notifications.";
+  "ListHit is a dispositions CRM and buyer communications platform for real estate teams—manage buyers, track deals, and send permission-based alerts.";
 const baseUrl = "https://listhit.io";
 
 export const metadata: Metadata = {

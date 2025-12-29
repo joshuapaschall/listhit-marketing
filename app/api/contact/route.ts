@@ -13,6 +13,8 @@ const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
 const rateLimitMax = 5;
 const rateLimitStore = new Map<string, { count: number; expires: number }>();
 
+const fallbackMailto = "mailto:support@listhit.io?subject=ListHit%20Support%20Request";
+
 function rateLimit(identifier: string) {
   const now = Date.now();
   const record = rateLimitStore.get(identifier);
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
   }
 
-  const endpoint = process.env.SUPPORT_CONTACT_ENDPOINT || "https://app.listhit.io/api/support/contact";
+  const endpoint = process.env.SUPPORT_CONTACT_ENDPOINT || "";
   const payload = {
     name,
     email,
@@ -66,6 +68,12 @@ export async function POST(req: NextRequest) {
     message,
     source: "listhit.io/contact",
   };
+
+  if (!endpoint) {
+    const fallbackMessage =
+      "We received your request. For the fastest response, email support@listhit.io or click the link below to open your email client.";
+    return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto });
+  }
 
   try {
     const controller = new AbortController();
@@ -81,12 +89,16 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       console.error("Support endpoint responded with status", response.status);
-      return NextResponse.json({ error: "Unable to deliver your message right now." }, { status: 502 });
+      const fallbackMessage =
+        "We could not deliver your request automatically. Please email support@listhit.io so we can respond quickly.";
+      return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto }, { status: 200 });
     }
 
     return NextResponse.json({ message: "Thanks! We received your message and will respond shortly." });
   } catch (error) {
     console.error("Contact submission failed", error);
-    return NextResponse.json({ error: "Unable to deliver your message right now." }, { status: 500 });
+    const fallbackMessage =
+      "We could not deliver your request automatically. Please email support@listhit.io so we can respond quickly.";
+    return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto }, { status: 200 });
   }
 }

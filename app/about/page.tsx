@@ -3,8 +3,7 @@ import { Button } from "../../components/Button";
 
 export const metadata = {
   title: "About",
-  description:
-    "ListHit is a transactional messaging platform for real estate teams that keeps buyers informed with permission-based updates.",
+  description: "ListHit is a dispositions CRM built for real estate investors and teams to move deals faster.",
 };
 
 export default function AboutPage() {
@@ -12,11 +11,11 @@ export default function AboutPage() {
     <Container>
       <section className="section">
         <div className="eyebrow">About ListHit</div>
-        <h1>Purpose-built messaging for real estate buyers.</h1>
-        <p>
-          ListHit was created for acquisition and dispo teams who need reliable, compliant messaging
-          without blasting inboxes. We focus on transactional updates—deal announcements, offer status,
-          account notices, and billing confirmations—for buyers who asked to stay informed.
+        <h1>Dispositions CRM built for real estate investors and teams.</h1>
+        <p style={{ maxWidth: 760 }}>
+          ListHit helps investor-friendly brokerages and dispo teams manage buyers, track offers, and deliver timely,
+          permission-based updates. The goal: move deals faster while keeping every communication clear, compliant, and
+          welcome.
         </p>
       </section>
 
@@ -24,27 +23,58 @@ export default function AboutPage() {
         <div className="card">
           <h3>Who we serve</h3>
           <ul className="list">
-            <li>Dispositions teams that need timely, opt-in property updates.</li>
-            <li>Operators who want clear unsubscribe handling and consent records.</li>
-            <li>Teams preparing for AWS SES production access with a compliant footprint.</li>
+            <li>Dispositions teams sharing new properties with curated buyer segments.</li>
+            <li>Investors who need a single system to manage buyers, offers, and follow-ups.</li>
+            <li>Teams that prioritize permission-based messaging and clean audit trails.</li>
           </ul>
         </div>
         <div className="card">
           <h3>Our mission</h3>
           <p className="muted">
-            Help real estate operators deliver trusted, permission-based communications that respect
-            inboxes and keep buyers engaged. We prioritize deliverability, consent, and fast responses
-            to abuse or security concerns.
+            Give real estate teams a product-first CRM that respects buyers and keeps deals moving. We believe in
+            permission-based messaging, transparent opt-outs, and reliable tracking for every interaction—no tricks to
+            “pass” approvals, just respectful communication.
           </p>
           <div className="callout" style={{ marginTop: 12 }}>
-            <strong>Contact us</strong>
+            <strong>How we work</strong>
             <p className="muted" style={{ marginTop: 6, marginBottom: 0 }}>
-              Questions about compliance or onboarding? We respond quickly at support@listhit.io.
+              We build alongside real operators. Clear opt-in policies, practical workflows, and responsive support are
+              core to the product.
             </p>
-            <Button href="/contact" style={{ marginTop: 12 }}>
-              Talk with our team
+          </div>
+        </div>
+      </section>
+
+      <section className="section card-grid">
+        <div className="card">
+          <h3>Messaging & compliance</h3>
+          <p className="muted">
+            Every alert is permission-based with unsubscribe controls, complaint suppression, and activity logs that show
+            who sent what and when. It’s compliance as a principle, not a checkbox.
+          </p>
+          <div className="cta-row" style={{ marginTop: 10 }}>
+            <Button variant="secondary" href="/acceptable-use">
+              Acceptable use
+            </Button>
+            <Button variant="secondary" href="/privacy">
+              Privacy
             </Button>
           </div>
+        </div>
+        <div className="card highlight-box">
+          <h3>Company info</h3>
+          <ul className="list">
+            <li>
+              Support:{" "}
+              <a href="mailto:support@listhit.io" style={{ color: "#dbeafe" }}>
+                support@listhit.io
+              </a>
+            </li>
+            <li>ListHit LLC — [Your Business Address]</li>
+          </ul>
+          <Button href="/contact" style={{ marginTop: 10 }}>
+            Talk with our team
+          </Button>
         </div>
       </section>
     </Container>
