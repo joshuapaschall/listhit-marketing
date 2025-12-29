@@ -4,11 +4,17 @@ import { Container } from "./Container";
 import { Button } from "./Button";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
+  { href: "/product", label: "Product" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/security", label: "Security" },
+  { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
+];
+
+const legalLinks = [
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
+  { href: "/acceptable-use", label: "Acceptable Use" },
+  { href: "/anti-spam", label: "Anti-Spam" },
 ];
 
 export function SiteHeader() {
@@ -26,8 +32,22 @@ export function SiteHeader() {
                 {link.label}
               </Link>
             ))}
-            <Button variant="primary" href="https://app.listhit.io/signup">
-              Get Started
+            <details className="nav-link" style={{ padding: 0, position: "relative" }}>
+              <summary className="nav-link" style={{ listStyle: "none" }}>
+                Legal
+              </summary>
+              <div className="card" style={{ position: "absolute", marginTop: 8, padding: 12, minWidth: 180 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {legalLinks.map((link) => (
+                    <Link key={link.href} href={link.href} className="nav-link" style={{ padding: "6px 8px" }}>
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </details>
+            <Button variant="primary" href="/login">
+              Log in
             </Button>
           </nav>
         </div>

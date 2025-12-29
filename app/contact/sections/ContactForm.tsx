@@ -6,6 +6,7 @@ import { Button } from "../../../components/Button";
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [mailtoLink, setMailtoLink] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -14,6 +15,7 @@ export function ContactForm() {
 
     setStatus("loading");
     setMessage("");
+    setMailtoLink(null);
 
     const payload = Object.fromEntries(formData.entries());
 
@@ -28,15 +30,24 @@ export function ContactForm() {
       if (res.ok) {
         setStatus("success");
         setMessage(data.message || "Thanks! We received your message.");
+        setMailtoLink(data.mailto || null);
         form.reset();
       } else {
-        setStatus("error");
-        setMessage(data.error || "Something went wrong. Please try again.");
+        if (data.mailto) {
+          setStatus("success");
+          setMessage(data.message || "Please email support@listhit.io so we can respond quickly.");
+          setMailtoLink(data.mailto);
+          form.reset();
+        } else {
+          setStatus("error");
+          setMessage(data.error || "Something went wrong. Please try again.");
+        }
       }
     } catch (error) {
       console.error(error);
-      setStatus("error");
-      setMessage("Unable to submit right now. Please try again shortly.");
+      setStatus("success");
+      setMessage("We could not submit automatically. Please email support@listhit.io so we can assist right away.");
+      setMailtoLink("mailto:support@listhit.io?subject=ListHit%20Support%20Request");
     }
   }
 
@@ -76,7 +87,14 @@ export function ContactForm() {
           {status === "loading" ? "Sending..." : "Send message"}
         </Button>
         {status !== "idle" && message && (
-          <div className={`form-status ${status === "success" ? "success" : "error"}`}>{message}</div>
+          <div className={`form-status ${status === "success" ? "success" : "error"}`}>
+            {message}{" "}
+            {mailtoLink ? (
+              <a href={mailtoLink} style={{ color: "#dbeafe", textDecoration: "underline" }}>
+                Email support
+              </a>
+            ) : null}
+          </div>
         )}
       </form>
     </div>

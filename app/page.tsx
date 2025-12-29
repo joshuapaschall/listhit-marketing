@@ -1,35 +1,52 @@
+import Image from "next/image";
 import { Button } from "../components/Button";
 import { Container } from "../components/Container";
 
-const features = [
+const featureBlocks = [
   {
-    title: "Purpose-built buyer lists",
-    body: "Organize buyers by market, price band, and preferences so each update stays relevant and welcome.",
+    title: "Manage buyers + segments",
+    body: "Centralize every investor, tag markets and price bands, and save reusable filters for hot, VIP, or inactive buyers.",
     icon: "📂",
   },
   {
-    title: "Permission-based messaging",
-    body: "Send opt-in alerts, assignments, and account notifications with unsubscribe and complaint handling baked in.",
-    icon: "✅",
+    title: "Track deals & offers",
+    body: "Log properties, offers, and status updates in one view so acquisitions, dispo, and ops stay aligned.",
+    icon: "🏠",
   },
   {
-    title: "Reliable deliverability",
-    body: "Bounce monitoring, complaint logging, and rate-aware sending keep your updates compliant with SES policies.",
-    icon: "📡",
+    title: "Opt-in alerts & notifications",
+    body: "Send targeted deal drops, offer follow-ups, and account notices with opt-out handling and clear preferences.",
+    icon: "📢",
+  },
+  {
+    title: "Inbox + activity timeline",
+    body: "See every touch—emails, SMS, calls, clicks, and tasks—in a single buyer timeline with engagement signals.",
+    icon: "📬",
+  },
+  {
+    title: "Team roles & audit trail",
+    body: "Granular roles for owners, agents, and collaborators plus immutable logs for edits, sends, and list changes.",
+    icon: "🛡️",
   },
 ];
 
-const complianceItems = [
-  "Only send to buyers who have requested updates or given explicit permission.",
-  "Honor unsubscribe requests automatically and provide a clear opt-out path.",
-  "Monitor bounces and complaints and remove problematic addresses quickly.",
-  "Never use purchased, scraped, or third-party lists without consent.",
+const screenshots = [
+  { src: "/screenshots/dashboard.svg", alt: "ListHit buyer dashboard showing segments and KPIs" },
+  { src: "/screenshots/properties.svg", alt: "ListHit property and offer tracking board" },
+  { src: "/screenshots/messaging.svg", alt: "Messaging composer with opt-in buyer alerts" },
 ];
 
-const stats = [
-  { label: "Deliverability focus", value: "SES-ready" },
-  { label: "Messaging type", value: "Transactional updates" },
-  { label: "Opt-out handling", value: "Built-in" },
+const useCases = [
+  "Dispositions teams announcing new properties to qualified buyer segments.",
+  "Investors managing VIP lists with saved filters and market-specific alerts.",
+  "Coordinators tracking offers, assignments, and follow-ups in one timeline.",
+  "Teams sending transactional notifications with clear opt-out controls.",
+];
+
+const trustSignals = [
+  { label: "Buyer records managed", value: "Thousands" },
+  { label: "Built for", value: "Dispo + acquisitions teams" },
+  { label: "Support", value: "support@listhit.io" },
 ];
 
 export default function Home() {
@@ -39,23 +56,20 @@ export default function Home() {
         <Container>
           <div className="hero-grid">
             <div>
-              <div className="eyebrow">Transactional messaging for real estate</div>
-              <h1 style={{ marginTop: 14, fontSize: 44 }}>
-                Keep buyers informed with compliant, permission-based updates.
-              </h1>
-              <p style={{ maxWidth: 620 }}>
-                ListHit helps real estate teams deliver deal announcements, account notices, and
-                important updates only to subscribers who asked for them. Built for AWS SES review
-                standards with clear consent, opt-out, and monitoring controls.
+              <div className="eyebrow">Real estate dispositions CRM</div>
+              <h1 style={{ marginTop: 14, fontSize: 44 }}>Dispositions CRM + Buyer Communications for Real Estate Teams</h1>
+              <p style={{ maxWidth: 720 }}>
+                ListHit helps investors and dispo teams manage buyers, track deals, and send permission-based alerts from
+                one place. Keep segments warm, follow offers through closing, and communicate with confidence.
               </p>
               <div className="cta-row" style={{ marginTop: 18 }}>
-                <Button href="https://app.listhit.io/signup">Start free</Button>
+                <Button href="/login">Log in</Button>
                 <Button variant="secondary" href="/contact">
-                  Talk to us
+                  Request access
                 </Button>
               </div>
               <div className="badge-list">
-                {stats.map((stat) => (
+                {trustSignals.map((stat) => (
                   <div key={stat.label} className="pill">
                     <span className="stat-value" style={{ fontSize: 16 }}>
                       {stat.value}
@@ -66,18 +80,18 @@ export default function Home() {
               </div>
             </div>
             <div className="card highlight-box" style={{ borderRadius: 20 }}>
-              <h3 style={{ marginBottom: 12 }}>Send updates with confidence</h3>
+              <h3 style={{ marginBottom: 12 }}>Purpose-built for dispo teams</h3>
               <ul className="list">
-                <li>Opt-in lists only—no purchased or scraped contacts.</li>
-                <li>Clear unsubscribe links and automated suppression.</li>
-                <li>Rate-aware sending tuned for transactional messages.</li>
-                <li>Delivery, bounce, and complaint logging for audits.</li>
+                <li>Buyer CRM with segments, saved filters, CSV import/export, and bulk updates.</li>
+                <li>Deal + offer tracking with statuses, notes, and agent ownership.</li>
+                <li>Inbox and activity timelines that keep context for every buyer and property.</li>
+                <li>Opt-in alerts, transactional notifications, and engagement tracking.</li>
               </ul>
               <div className="callout" style={{ marginTop: 16 }}>
-                <strong>Use cases:</strong>
+                <strong>Built to move deals faster.</strong>
                 <p className="muted" style={{ marginTop: 6, marginBottom: 0 }}>
-                  Property updates, offer status, closing timelines, account security notices, billing
-                  confirmations, and opted-in marketing follow-ups with consent.
+                  Keep your best buyers close, send targeted updates they expect, and keep teams aligned from assignment
+                  to closing.
                 </p>
               </div>
             </div>
@@ -89,14 +103,14 @@ export default function Home() {
         <Container>
           <div className="section-heading">
             <div className="eyebrow">Platform</div>
-            <h2>Built for reliable, permission-based outreach.</h2>
+            <h2>Everything you need to run dispositions in one workspace.</h2>
             <p>
-              A focused workflow that respects inboxes, keeps lists clean, and makes it easy to prove
-              compliance during SES production reviews.
+              ListHit keeps your buyers, deals, messaging, and team workflows together so every update is timely,
+              relevant, and compliant with permission-based outreach.
             </p>
           </div>
           <div className="card-grid" style={{ marginTop: 20 }}>
-            {features.map((feature) => (
+            {featureBlocks.map((feature) => (
               <div key={feature.title} className="card">
                 <div className="pill" style={{ marginBottom: 10 }}>
                   <span style={{ fontSize: 18 }}>{feature.icon}</span>
@@ -112,39 +126,25 @@ export default function Home() {
       <section className="section">
         <Container>
           <div className="section-heading">
-            <div className="eyebrow">Compliance</div>
-            <h2>Respect consent, handle opt-outs, and prevent abuse.</h2>
-            <p>
-              ListHit enforces permission-based messaging. We prohibit purchased or scraped lists and
-              require verifiable consent to receive updates. Every send includes unsubscribe support and
-              automatic suppression for complaints or hard bounces.
-            </p>
+            <div className="eyebrow">Product screenshots</div>
+            <h2>See ListHit in action.</h2>
+            <p>Buyer CRM, offer tracking, and messaging workflows designed for dispo and acquisitions teams.</p>
           </div>
-          <div className="two-column" style={{ marginTop: 16 }}>
-            <div className="card">
-              <h3>What we expect</h3>
-              <ul className="list">
-                {complianceItems.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="card">
-              <h3>Monitoring & controls</h3>
-              <ul className="list">
-                <li>Complaint and bounce monitoring with suppression rules.</li>
-                <li>Access controls for team roles and audit-friendly logs.</li>
-                <li>Data retention policies with timely removal on request.</li>
-                <li>Dedicated support for abuse reports at support@listhit.io.</li>
-              </ul>
-              <div className="callout" style={{ marginTop: 12 }}>
-                <strong>Fast resolutions.</strong>
-                <p className="muted" style={{ marginTop: 6, marginBottom: 0 }}>
-                  We respond to abuse or security reports quickly and remove non-compliant senders to
-                  protect deliverability for everyone.
-                </p>
+          <div className="card-grid" style={{ marginTop: 20 }}>
+            {screenshots.map((shot) => (
+              <div key={shot.src} className="card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div className="pill" style={{ width: "fit-content" }}>
+                  <span role="img" aria-label="Screenshot">
+                    🖼️
+                  </span>
+                  <span>Product view</span>
+                </div>
+                <div style={{ position: "relative", width: "100%", aspectRatio: "4 / 2.5", borderRadius: 12, overflow: "hidden" }}>
+                  <Image src={shot.src} alt={shot.alt} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: "cover" }} />
+                </div>
+                <p className="muted" style={{ margin: 0 }}>{shot.alt}</p>
               </div>
-            </div>
+            ))}
           </div>
         </Container>
       </section>
@@ -152,49 +152,29 @@ export default function Home() {
       <section className="section">
         <Container>
           <div className="section-heading">
-            <div className="eyebrow">Pricing</div>
-            <h2>Predictable plans for transactional messaging.</h2>
-            <p>
-              Choose the plan that fits your volume and team size. All plans include consent-based
-              sending, unsubscribe handling, and monitoring.
-            </p>
+            <div className="eyebrow">Use cases</div>
+            <h2>Built for the way real estate teams work.</h2>
+            <p>ListHit is the operational hub for investor relations, dispo, and acquisitions coordination.</p>
           </div>
-          <div className="card-grid" style={{ marginTop: 20 }}>
+          <div className="two-column" style={{ marginTop: 12 }}>
             <div className="card">
-              <h3>Starter</h3>
-              <p className="muted">For small teams validating workflows.</p>
+              <h3>How teams use ListHit</h3>
               <ul className="list">
-                <li>Up to 5,000 messages/month</li>
-                <li>Opt-in list enforcement</li>
-                <li>Unsubscribe + bounce handling</li>
+                {useCases.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
-              <Button href="https://app.listhit.io/signup" style={{ marginTop: 12 }}>
-                Start now
-              </Button>
             </div>
             <div className="card highlight-box">
-              <h3>Growth</h3>
-              <p className="muted">For active dispo teams sending frequent updates.</p>
-              <ul className="list">
-                <li>Up to 50,000 messages/month</li>
-                <li>Complaint monitoring & suppression</li>
-                <li>Team roles and audit-friendly logs</li>
-              </ul>
-              <Button href="https://app.listhit.io/signup" style={{ marginTop: 12 }}>
-                Upgrade
-              </Button>
-            </div>
-            <div className="card">
-              <h3>Scale</h3>
-              <p className="muted">For multi-market operations with custom needs.</p>
-              <ul className="list">
-                <li>Custom volume and throughput</li>
-                <li>Dedicated deliverability reviews</li>
-                <li>Priority support and onboarding</li>
-              </ul>
-              <Button href="/contact" style={{ marginTop: 12 }}>
-                Talk to us
-              </Button>
+              <h3>Messaging & compliance</h3>
+              <p className="muted">
+                Permission-based messaging is built in: unsubscribe handling, complaint suppression, and audit-ready
+                activity logs with role-based access. Deliver updates buyers expect—no tricks or gray-area sending.
+              </p>
+              <div className="pill" style={{ marginTop: 10, width: "fit-content" }}>
+                <span>Fast support</span>
+                <span className="muted">support@listhit.io</span>
+              </div>
             </div>
           </div>
         </Container>
@@ -205,17 +185,16 @@ export default function Home() {
           <div className="card highlight-box">
             <div className="two-column" style={{ alignItems: "center" }}>
               <div>
-                <h2>Ready to show SES how you handle compliance?</h2>
+                <h2>Ready to move deals faster?</h2>
                 <p>
-                  Set up your lists, send verified updates, and keep clean records of consent,
-                  unsubscribes, and complaints. ListHit makes it straightforward to demonstrate
-                  transactional-only usage.
+                  Log in to manage your buyers and deals today, or request access and we’ll help set up segments, alerts,
+                  and tracking tailored to your markets.
                 </p>
               </div>
               <div className="cta-row" style={{ justifyContent: "flex-end" }}>
-                <Button href="https://app.listhit.io/signup">Create account</Button>
+                <Button href="/login">Log in</Button>
                 <Button variant="secondary" href="/contact">
-                  Ask a question
+                  Request access
                 </Button>
               </div>
             </div>

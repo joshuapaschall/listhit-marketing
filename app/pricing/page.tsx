@@ -3,33 +3,52 @@ import { Button } from "../../components/Button";
 
 export const metadata = {
   title: "Pricing",
-  description: "Transparent plans for transactional messaging with consent controls and compliance built in.",
+  description: "Simple pricing for ListHit’s dispositions CRM and buyer communications.",
 };
 
 const plans = [
   {
     name: "Starter",
-    price: "$49/mo",
-    description: "For new teams establishing compliant workflows.",
-    features: ["5,000 messages/month", "Opt-in list enforcement", "Unsubscribe + bounce handling"],
-    cta: "Start now",
-    href: "https://app.listhit.io/signup",
+    price: "$79/mo",
+    description: "For solo investors validating a market.",
+    features: [
+      "1 user",
+      "5,000 buyers",
+      "Saved segments & tags",
+      "Deal/offer tracking",
+      "Email updates with opt-out",
+    ],
+    cta: "Request access",
+    href: "/contact",
   },
   {
-    name: "Growth",
-    price: "$149/mo",
-    description: "For active dispo teams with frequent updates.",
-    features: ["50,000 messages/month", "Complaint monitoring & suppression", "Team roles and audit logs"],
-    cta: "Upgrade",
-    href: "https://app.listhit.io/signup",
+    name: "Team",
+    price: "$199/mo",
+    description: "For dispo teams collaborating on multiple deals.",
+    features: [
+      "Up to 5 users",
+      "20,000 buyers",
+      "Campaigns & alerts",
+      "Inbox + activity timeline",
+      "Engagement tracking & click metrics",
+      "Role-based access",
+    ],
+    cta: "Talk to sales",
+    href: "/contact",
     featured: true,
   },
   {
     name: "Scale",
-    price: "Custom",
-    description: "For multi-market operators needing custom throughput.",
-    features: ["Custom volume", "Dedicated deliverability reviews", "Priority support and onboarding"],
-    cta: "Talk to us",
+    price: "Contact us",
+    description: "For multi-market operators and brokerage teams.",
+    features: [
+      "Unlimited users",
+      "High-volume buyers & imports",
+      "Advanced permissions & SSO",
+      "Deliverability & compliance reviews",
+      "Custom onboarding & migration",
+    ],
+    cta: "Contact sales",
     href: "/contact",
   },
 ];
@@ -39,11 +58,8 @@ export default function PricingPage() {
     <Container>
       <section className="section">
         <div className="eyebrow">Pricing</div>
-        <h1>Plans focused on transactional deliverability.</h1>
-        <p>
-          Every plan includes permission-based sending, unsubscribe handling, bounce suppression, and
-          compliance guidance that aligns with AWS SES expectations.
-        </p>
+        <h1>Pricing that scales with your dispo pipeline.</h1>
+        <p>Every plan includes permission-based messaging, clean audit logs, and fast support.</p>
       </section>
 
       <section className="section card-grid">
@@ -70,13 +86,10 @@ export default function PricingPage() {
         <div className="card highlight-box">
           <div className="two-column" style={{ alignItems: "center" }}>
             <div>
-              <h3>Need a throughput review?</h3>
-              <p className="muted">
-                We’ll help you map your sending patterns to SES requirements, set up suppression rules,
-                and provide sample logs for production access requests.
-              </p>
+              <h3>Not sure which plan fits?</h3>
+              <p className="muted">Tell us about your buyers, markets, and messaging goals. We’ll recommend a plan and set up your workspace.</p>
             </div>
-            <Button href="/contact">Schedule a review</Button>
+            <Button href="/contact">Talk with sales</Button>
           </div>
         </div>
       </section>
