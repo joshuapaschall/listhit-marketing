@@ -7,6 +7,7 @@ type ContactPayload = {
   subject?: string;
   message?: string;
   company?: string;
+  website?: string;
 };
 
 const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
@@ -45,14 +46,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }
 
-  const { name, email, phone, subject, message, company } = body;
+  const { name, email, phone, subject, message, company, website } = body;
 
-  if (company && company.trim().length > 0) {
+  if ((company && company.trim().length > 0) || (website && website.trim().length > 0)) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
   }
 
   if (!name || !email || !subject || !message) {
     return NextResponse.json({ error: "Name, email, subject, and message are required." }, { status: 400 });
+  }
+
+  if (message.trim().length < 12) {
+    return NextResponse.json({ error: "Please include a bit more detail so we can help." }, { status: 400 });
   }
 
   if (!isValidEmail(email)) {

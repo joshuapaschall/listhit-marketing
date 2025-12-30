@@ -3,7 +3,7 @@ import { Button } from "../../components/Button";
 
 export const metadata = {
   title: "About",
-  description: "ListHit is a dispositions CRM built for real estate investors and teams to move deals faster.",
+  description: "ListHit is a buyer CRM and deal distribution platform built for real estate teams.",
 };
 
 export default function AboutPage() {
@@ -11,11 +11,10 @@ export default function AboutPage() {
     <Container>
       <section className="section">
         <div className="eyebrow">About ListHit</div>
-        <h1>Dispositions CRM built for real estate investors and teams.</h1>
+        <h1>Buyer CRM and deal distribution for modern real estate teams.</h1>
         <p style={{ maxWidth: 760 }}>
-          ListHit helps investor-friendly brokerages and dispo teams manage buyers, track offers, and deliver timely,
-          permission-based updates. The goal: move deals faster while keeping every communication clear, compliant, and
-          welcome.
+          ListHit was built for investors, agents, and dispo managers who need a clean, purpose-built workspace for buyers and deals. Organize every
+          relationship, track offers, and share opportunities without slowing the team down.
         </p>
       </section>
 
@@ -24,22 +23,20 @@ export default function AboutPage() {
           <h3>Who we serve</h3>
           <ul className="list">
             <li>Dispositions teams sharing new properties with curated buyer segments.</li>
-            <li>Investors who need a single system to manage buyers, offers, and follow-ups.</li>
-            <li>Teams that prioritize permission-based messaging and clean audit trails.</li>
+            <li>Agents and investor teams managing VIP buyers and active deals in one place.</li>
+            <li>Operators who want clear ownership, notes, and history on every buyer and property.</li>
           </ul>
         </div>
         <div className="card">
           <h3>Our mission</h3>
           <p className="muted">
-            Give real estate teams a product-first CRM that respects buyers and keeps deals moving. We believe in
-            permission-based messaging, transparent opt-outs, and reliable tracking for every interaction—no tricks to
-            “pass” approvals, just respectful communication.
+            Help real estate teams move deals faster with a product that keeps buyers organized and communications focused. We build alongside operators
+            to keep the workflows practical and ready for day-to-day use.
           </p>
           <div className="callout" style={{ marginTop: 12 }}>
             <strong>How we work</strong>
             <p className="muted" style={{ marginTop: 6, marginBottom: 0 }}>
-              We build alongside real operators. Clear opt-in policies, practical workflows, and responsive support are
-              core to the product.
+              Clear workflows, fast support, and a focus on buyer relationships guide what we ship.
             </p>
           </div>
         </div>
@@ -47,19 +44,14 @@ export default function AboutPage() {
 
       <section className="section card-grid">
         <div className="card">
-          <h3>Messaging & compliance</h3>
+          <h3>What we’re building</h3>
           <p className="muted">
-            Every alert is permission-based with unsubscribe controls, complaint suppression, and activity logs that show
-            who sent what and when. It’s compliance as a principle, not a checkbox.
+            A dedicated buyer CRM with deal management, distribution, and reporting built for real estate operators. No generic tools—just what teams
+            need to keep buyers engaged and inventory moving.
           </p>
-          <div className="cta-row" style={{ marginTop: 10 }}>
-            <Button variant="secondary" href="/acceptable-use">
-              Acceptable use
-            </Button>
-            <Button variant="secondary" href="/privacy">
-              Privacy
-            </Button>
-          </div>
+          <Button variant="secondary" href="/product" style={{ marginTop: 10 }}>
+            Explore the product
+          </Button>
         </div>
         <div className="card highlight-box">
           <h3>Company info</h3>
@@ -70,7 +62,8 @@ export default function AboutPage() {
                 support@listhit.io
               </a>
             </li>
-            <li>ListHit LLC — [Your Business Address]</li>
+            <li>Company: ListHit</li>
+            <li>Based in the United States</li>
           </ul>
           <Button href="/contact" style={{ marginTop: 10 }}>
             Talk with our team
