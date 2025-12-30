@@ -56,9 +56,9 @@ export default function Home() {
                 buyer segments, and team workflow in one workspace.
               </p>
               <div className="cta-row" style={{ marginTop: 18 }}>
-                <Button href="/login">Log in</Button>
+                <Button href="/get-started">Get started</Button>
                 <Button variant="secondary" href="/contact">
-                  Request access
+                  Contact support
                 </Button>
               </div>
               <div className="hero-meta">
@@ -180,12 +180,12 @@ export default function Home() {
             <div className="two-column" style={{ alignItems: "center" }}>
               <div>
                 <h2>Ready to move deals faster?</h2>
-                <p>Log in to work with your current buyers or request access and we’ll help you get set up.</p>
+                <p>Get started to create your workspace or contact support and we’ll help you configure notifications and onboarding.</p>
               </div>
               <div className="cta-row" style={{ justifyContent: "flex-end" }}>
-                <Button href="/login">Log in</Button>
+                <Button href="/get-started">Get started</Button>
                 <Button variant="secondary" href="/contact">
-                  Request access
+                  Contact support
                 </Button>
               </div>
             </div>
