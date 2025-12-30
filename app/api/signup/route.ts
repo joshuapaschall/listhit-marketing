@@ -70,8 +70,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (error || !data?.action_link) {
-      console.error("Supabase signup link generation failed", error || data);
+    const actionLink = data?.properties?.action_link;
+
+    if (error || !actionLink) {
+      console.error("Supabase signup link generation failed", error || data?.properties);
       return NextResponse.json({ error: "Could not create your account. Please try again." }, { status: 500 });
     }
 
@@ -92,7 +94,7 @@ export async function POST(req: NextRequest) {
     await sendVerificationEmail({
       toEmail: email,
       toName: fullName,
-      actionLink: data.action_link,
+      actionLink,
     });
 
     return NextResponse.json({ message: "Check your email to verify your account." });
