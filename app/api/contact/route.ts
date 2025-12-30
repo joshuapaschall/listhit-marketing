@@ -1,0 +1,109 @@
+import { NextRequest, NextResponse } from "next/server";
+
+type ContactPayload = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  subject?: string;
+  message?: string;
+  company?: string;
+  website?: string;
+};
+
+const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
+const rateLimitMax = 5;
+const rateLimitStore = new Map<string, { count: number; expires: number }>();
+
+const fallbackMailto = "mailto:support@listhit.io?subject=ListHit%20Support%20Request";
+
+function rateLimit(identifier: string) {
+  const now = Date.now();
+  const record = rateLimitStore.get(identifier);
+  if (record && record.expires > now) {
+    if (record.count >= rateLimitMax) return false;
+    record.count += 1;
+    rateLimitStore.set(identifier, record);
+    return true;
+  }
+  rateLimitStore.set(identifier, { count: 1, expires: now + rateLimitWindowMs });
+  return true;
+}
+
+function isValidEmail(email: string) {
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+}
+
+export async function POST(req: NextRequest) {
+  const ip = req.ip || req.headers.get("x-forwarded-for") || "unknown";
+  if (!rateLimit(ip)) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  }
+
+  let body: ContactPayload;
+  try {
+    body = await req.json();
+  } catch (error) {
+    return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
+  }
+
+  const { name, email, phone, subject, message, company, website } = body;
+
+  if ((company && company.trim().length > 0) || (website && website.trim().length > 0)) {
+    return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
+  }
+
+  if (!name || !email || !subject || !message) {
+    return NextResponse.json({ error: "Name, email, subject, and message are required." }, { status: 400 });
+  }
+
+  if (message.trim().length < 12) {
+    return NextResponse.json({ error: "Please include a bit more detail so we can help." }, { status: 400 });
+  }
+
+  if (!isValidEmail(email)) {
+    return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
+  }
+
+  const endpoint = process.env.SUPPORT_CONTACT_ENDPOINT || "";
+  const payload = {
+    name,
+    email,
+    phone,
+    subject,
+    message,
+    source: "listhit.io/contact",
+  };
+
+  if (!endpoint) {
+    const fallbackMessage =
+      "We received your request. For the fastest response, email support@listhit.io or click the link below to open your email client.";
+    return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto });
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      console.error("Support endpoint responded with status", response.status);
+      const fallbackMessage =
+        "We could not deliver your request automatically. Please email support@listhit.io so we can respond quickly.";
+      return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto }, { status: 200 });
+    }
+
+    return NextResponse.json({ message: "Thanks! We received your message and will respond shortly." });
+  } catch (error) {
+    console.error("Contact submission failed", error);
+    const fallbackMessage =
+      "We could not deliver your request automatically. Please email support@listhit.io so we can respond quickly.";
+    return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto }, { status: 200 });
+  }
+}
