@@ -3,37 +3,24 @@ import { Button } from "../../components/Button";
 
 export const metadata = {
   title: "Pricing",
-  description: "Simple pricing for ListHit’s dispositions CRM and buyer communications.",
+  description: "Straightforward plans for ListHit’s buyer CRM and deal distribution platform.",
 };
 
 const plans = [
   {
     name: "Starter",
     price: "$79/mo",
-    description: "For solo investors validating a market.",
-    features: [
-      "1 user",
-      "5,000 buyers",
-      "Saved segments & tags",
-      "Deal/offer tracking",
-      "Email updates with opt-out",
-    ],
-    cta: "Request access",
-    href: "/contact",
+    description: "For solo investors and new dispo managers.",
+    features: ["1 user", "5,000 buyers", "Tags, notes, saved segments", "Deal & offer tracking", "Targeted deal distribution"],
+    cta: "Log in",
+    href: "/login",
   },
   {
     name: "Team",
     price: "$199/mo",
-    description: "For dispo teams collaborating on multiple deals.",
-    features: [
-      "Up to 5 users",
-      "20,000 buyers",
-      "Campaigns & alerts",
-      "Inbox + activity timeline",
-      "Engagement tracking & click metrics",
-      "Role-based access",
-    ],
-    cta: "Talk to sales",
+    description: "For teams running multiple deals at once.",
+    features: ["Up to 5 users", "20,000 buyers", "Buyer CRM with import/export", "Deal pipeline & ownership", "Distribution with segments", "Activity history & notes"],
+    cta: "Talk with us",
     href: "/contact",
     featured: true,
   },
@@ -41,14 +28,8 @@ const plans = [
     name: "Scale",
     price: "Contact us",
     description: "For multi-market operators and brokerage teams.",
-    features: [
-      "Unlimited users",
-      "High-volume buyers & imports",
-      "Advanced permissions & SSO",
-      "Deliverability & compliance reviews",
-      "Custom onboarding & migration",
-    ],
-    cta: "Contact sales",
+    features: ["Unlimited users", "High-volume buyers & imports", "Advanced permissions", "Team workflows & roles", "Dedicated onboarding"],
+    cta: "Contact us",
     href: "/contact",
   },
 ];
@@ -58,8 +39,8 @@ export default function PricingPage() {
     <Container>
       <section className="section">
         <div className="eyebrow">Pricing</div>
-        <h1>Pricing that scales with your dispo pipeline.</h1>
-        <p>Every plan includes permission-based messaging, clean audit logs, and fast support.</p>
+        <h1>Pricing that matches your pipeline.</h1>
+        <p>Choose a plan that fits how your team manages buyers and distributes deals.</p>
       </section>
 
       <section className="section card-grid">

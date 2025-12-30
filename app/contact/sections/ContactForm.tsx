@@ -60,6 +60,10 @@ export function ContactForm() {
             Company
             <input name="company" type="text" autoComplete="off" />
           </label>
+          <label>
+            Website
+            <input name="website" type="text" autoComplete="off" />
+          </label>
         </div>
         <div className="form-row">
           <div className="form-field">

@@ -20,7 +20,7 @@ export function SiteFooter() {
               <span>ListHit</span>
             </div>
             <div className="muted" style={{ marginTop: 6 }}>
-              Deliver permission-based updates buyers trust.
+              Buyer CRM and deal distribution for real estate teams.
             </div>
           </div>
           <div className="footer-links" aria-label="Secondary navigation">
