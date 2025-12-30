@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Container } from "../../components/Container";
 import { Button } from "../../components/Button";
 
@@ -24,12 +23,6 @@ const pillars = [
     title: "Reporting",
     body: "Keep a pulse on pipeline health and buyer activity with straightforward performance insights.",
   },
-];
-
-const screenshots = [
-  { src: "/screenshots/dashboard.svg", alt: "Dashboard preview" },
-  { src: "/screenshots/properties.svg", alt: "Deal pipeline preview" },
-  { src: "/screenshots/messaging.svg", alt: "Buyer segment send preview" },
 ];
 
 const flow = [
@@ -68,30 +61,6 @@ export default function ProductPage() {
             </p>
           </div>
         ))}
-      </section>
-
-      <section className="section">
-        <div className="section-heading">
-          <div className="eyebrow">Screenshots</div>
-          <h2>Preview the workflow</h2>
-          <p>Buyer CRM, deal pipeline, and distribution views designed for investor and agent teams.</p>
-        </div>
-        <div className="card-grid" style={{ marginTop: 20 }}>
-          {screenshots.map((shot) => (
-            <div key={shot.src} className="card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <div className="pill" style={{ width: "fit-content" }}>
-                <span role="img" aria-label="Screenshot">
-                  🖼️
-                </span>
-                <span>Dashboard preview</span>
-              </div>
-              <div style={{ position: "relative", width: "100%", aspectRatio: "4 / 2.5", borderRadius: 12, overflow: "hidden" }}>
-                <Image src={shot.src} alt={shot.alt} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: "cover" }} />
-              </div>
-              <p className="muted" style={{ margin: 0 }}>{shot.alt}</p>
-            </div>
-          ))}
-        </div>
       </section>
 
       <section className="section two-column">
