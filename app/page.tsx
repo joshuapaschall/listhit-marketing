@@ -56,7 +56,7 @@ export default function Home() {
                 buyer segments, and team workflow in one workspace.
               </p>
               <div className="cta-row" style={{ marginTop: 18 }}>
-                <Button href="/get-started">Get started</Button>
+                <Button href="/signup">Get started</Button>
                 <Button variant="secondary" href="/contact">
                   Contact support
                 </Button>
@@ -183,7 +183,7 @@ export default function Home() {
                 <p>Get started to create your workspace or contact support and we’ll help you configure notifications and onboarding.</p>
               </div>
               <div className="cta-row" style={{ justifyContent: "flex-end" }}>
-                <Button href="/get-started">Get started</Button>
+                <Button href="/signup">Get started</Button>
                 <Button variant="secondary" href="/contact">
                   Contact support
                 </Button>

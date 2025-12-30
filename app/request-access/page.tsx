@@ -14,7 +14,7 @@ export default function RequestAccessPage() {
         <h1>Talk with us about your buyer CRM and deal workflow.</h1>
         <p>
           Share your team goals and we’ll walk through ListHit for buyer management, deal tracking, and distribution. We’ll confirm access and help
-          you set up transactional notifications for account activity.
+          you set up your workspace.
         </p>
       </section>
       <section className="section" style={{ paddingTop: 0 }}>
