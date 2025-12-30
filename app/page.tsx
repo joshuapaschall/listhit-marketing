@@ -5,23 +5,33 @@ import { Container } from "../components/Container";
 const capabilityCards = [
   {
     title: "Buyer CRM",
-    body: "Tag buyers by market, price band, and intent. Save segments, notes, and contact history in one place.",
+    body: "Segment by tags, markets, and intent with saved filters, notes, and contact history.",
     icon: "🗂️",
   },
   {
-    title: "Deal pipeline",
-    body: "Track properties, offers, status, and owners so acquisitions and dispo stay aligned.",
+    title: "Deal Pipeline",
+    body: "Track properties, offers, and status so acquisitions and dispo stay in lockstep.",
     icon: "📊",
   },
   {
-    title: "Deal distribution",
-    body: "Share opportunities with the right buyers using targeted sends and clear context on each property.",
+    title: "Deal Distribution",
+    body: "Send opportunities to the right buyers with context on price, terms, and timelines.",
     icon: "📨",
   },
   {
-    title: "Team workflow",
-    body: "Work with agents and coordinators, keep activity history, and know who’s following up next.",
+    title: "Team Workflow",
+    body: "Assign work, capture follow-ups, and keep every touchpoint visible to the team.",
     icon: "🤝",
+  },
+  {
+    title: "Import/Export",
+    body: "Clean CSV imports, bulk updates, and exports that keep your buyer list healthy.",
+    icon: "📥",
+  },
+  {
+    title: "Activity Timeline",
+    body: "Know who did what and when with a running log across buyers, deals, and sends.",
+    icon: "📜",
   },
 ];
 
@@ -34,9 +44,9 @@ const steps = [
 const builtFor = ["Wholesalers", "Agents", "Investor teams", "Dispo managers"];
 
 const screenshots = [
-  { src: "/screenshots/dashboard.svg", alt: "ListHit dashboard preview" },
-  { src: "/screenshots/properties.svg", alt: "Deal pipeline preview" },
-  { src: "/screenshots/messaging.svg", alt: "Buyer segment send preview" },
+  { src: "/screenshots/dashboard.svg", alt: "Dashboard overview with buyer list and KPIs" },
+  { src: "/screenshots/pipeline.svg", alt: "Deal pipeline with offers and status" },
+  { src: "/screenshots/distribution.svg", alt: "Targeted distribution to a buyer segment" },
 ];
 
 export default function Home() {
@@ -45,10 +55,10 @@ export default function Home() {
       <section className="hero">
         <Container>
           <div className="hero-grid">
-            <div>
+            <div className="hero-copy">
               <div className="eyebrow">ListHit for real estate teams</div>
-              <h1 style={{ marginTop: 14, fontSize: 44 }}>Buyer CRM & Deal Distribution for Real Estate Teams</h1>
-              <p style={{ maxWidth: 720 }}>
+              <h1 className="hero-title">Buyer CRM & Deal Distribution for Real Estate Teams</h1>
+              <p className="lead">
                 Organize buyers, manage deals and offers, and distribute opportunities to the right investors fast. ListHit keeps your pipeline,
                 buyer segments, and team workflow in one workspace.
               </p>
@@ -58,18 +68,44 @@ export default function Home() {
                   Request access
                 </Button>
               </div>
+              <div className="hero-meta">
+                <div className="pill">
+                  <span role="img" aria-label="Workflow">
+                    ⚡
+                  </span>
+                  <span>Distribute deals in minutes</span>
+                </div>
+                <div className="pill" aria-label="Support email">
+                  <span>Support</span>
+                  <span className="muted">support@listhit.io</span>
+                </div>
+              </div>
             </div>
-            <div className="card highlight-box" style={{ borderRadius: 20 }}>
-              <h3 style={{ marginBottom: 12 }}>Built to move deals faster</h3>
-              <ul className="list">
-                <li>Buyer CRM with tags, segments, saved filters, and import/export.</li>
-                <li>Deal pipeline that tracks properties, offers, and status in one view.</li>
-                <li>Targeted distribution so the right buyers see the right opportunities.</li>
-                <li>Team activity history so everyone knows the next best action.</li>
-              </ul>
-              <div className="pill" style={{ marginTop: 12, width: "fit-content" }}>
-                <span>Support</span>
-                <span className="muted">support@listhit.io</span>
+            <div className="hero-visual">
+              <div className="card highlight-box" style={{ borderRadius: 20 }}>
+                <div className="pill" style={{ marginBottom: 10, width: "fit-content" }}>
+                  <span role="img" aria-label="Dashboard">
+                    📈
+                  </span>
+                  <span>Buyer performance</span>
+                </div>
+                <div className="hero-chart">
+                  <div className="hero-chart__stat">
+                    <span className="stat-value">2,184</span>
+                    <span className="stat-label">Active buyers</span>
+                  </div>
+                  <div className="hero-chart__stat">
+                    <span className="stat-value">38</span>
+                    <span className="stat-label">Deals this month</span>
+                  </div>
+                  <div className="hero-chart__stat">
+                    <span className="stat-value">92%</span>
+                    <span className="stat-label">Engaged segments</span>
+                  </div>
+                </div>
+                <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: 14, overflow: "hidden" }}>
+                  <Image src="/screenshots/dashboard.png" alt="ListHit dashboard" fill sizes="(max-width: 768px) 100vw, 520px" style={{ objectFit: "cover" }} priority />
+                </div>
               </div>
             </div>
           </div>
@@ -83,7 +119,7 @@ export default function Home() {
             <h2>Keep buyers organized and distribute deals with confidence.</h2>
             <p>Everything needed to manage investor relationships, track offers, and send opportunities to the right people.</p>
           </div>
-          <div className="card-grid" style={{ marginTop: 20 }}>
+          <div className="features-grid" style={{ marginTop: 24 }}>
             {capabilityCards.map((feature) => (
               <div key={feature.title} className="card">
                 <div className="pill" style={{ marginBottom: 10 }}>
@@ -131,10 +167,16 @@ export default function Home() {
                   <span role="img" aria-label="Screenshot">
                     🖼️
                   </span>
-                  <span>Dashboard preview</span>
+                  <span>Product preview</span>
                 </div>
-                <div style={{ position: "relative", width: "100%", aspectRatio: "4 / 2.5", borderRadius: 12, overflow: "hidden" }}>
-                  <Image src={shot.src} alt={shot.alt} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: "cover" }} />
+                <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: 14, overflow: "hidden" }}>
+                  <Image
+                    src={shot.src}
+                    alt={shot.alt}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    style={{ objectFit: "cover" }}
+                  />
                 </div>
                 <p className="muted" style={{ margin: 0 }}>{shot.alt}</p>
               </div>
