@@ -12,8 +12,8 @@ const plans = [
     price: "$79/mo",
     description: "For solo investors and new dispo managers.",
     features: ["1 user", "5,000 buyers", "Tags, notes, saved segments", "Deal & offer tracking", "Targeted deal distribution"],
-    cta: "Log in",
-    href: "/login",
+    cta: "Sign up",
+    href: "/signup",
   },
   {
     name: "Team",
