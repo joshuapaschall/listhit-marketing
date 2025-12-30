@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Button } from "../components/Button";
 import { Container } from "../components/Container";
 
@@ -42,12 +41,6 @@ const steps = [
 ];
 
 const builtFor = ["Wholesalers", "Agents", "Investor teams", "Dispo managers"];
-
-const screenshots = [
-  { src: "/screenshots/dashboard.svg", alt: "Dashboard overview with buyer list and KPIs" },
-  { src: "/screenshots/pipeline.svg", alt: "Deal pipeline with offers and status" },
-  { src: "/screenshots/distribution.svg", alt: "Targeted distribution to a buyer segment" },
-];
 
 export default function Home() {
   return (
@@ -103,8 +96,19 @@ export default function Home() {
                     <span className="stat-label">Engaged segments</span>
                   </div>
                 </div>
-                <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: 14, overflow: "hidden" }}>
-                  <Image src="/screenshots/dashboard.png" alt="ListHit dashboard" fill sizes="(max-width: 768px) 100vw, 520px" style={{ objectFit: "cover" }} priority />
+                <div className="card" style={{ marginTop: 12, borderRadius: 14, background: "#f8fafc", borderColor: "#e2e8f0" }}>
+                  <h3 style={{ marginBottom: 6 }}>Next actions</h3>
+                  <ul className="list" style={{ margin: 0, paddingLeft: 18 }}>
+                    <li>
+                      <strong>Segment VIP buyers</strong> based on tags and market focus.
+                    </li>
+                    <li>
+                      <strong>Attach deals</strong> with pricing, offers, and owners so nothing slips.
+                    </li>
+                    <li>
+                      <strong>Send to the right list</strong> using saved segments and templates.
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -147,38 +151,6 @@ export default function Home() {
                   <span>{step.title}</span>
                 </div>
                 <p className="muted" style={{ marginTop: 4 }}>{step.description}</p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      <section className="section">
-        <Container>
-          <div className="section-heading">
-            <div className="eyebrow">Screenshots</div>
-            <h2>Product previews</h2>
-            <p>See the buyer CRM, deal pipeline, and distribution workflow.</p>
-          </div>
-          <div className="card-grid" style={{ marginTop: 20 }}>
-            {screenshots.map((shot) => (
-              <div key={shot.src} className="card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div className="pill" style={{ width: "fit-content" }}>
-                  <span role="img" aria-label="Screenshot">
-                    🖼️
-                  </span>
-                  <span>Product preview</span>
-                </div>
-                <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: 14, overflow: "hidden" }}>
-                  <Image
-                    src={shot.src}
-                    alt={shot.alt}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    style={{ objectFit: "cover" }}
-                  />
-                </div>
-                <p className="muted" style={{ margin: 0 }}>{shot.alt}</p>
               </div>
             ))}
           </div>
