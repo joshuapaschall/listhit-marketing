@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Pipeline mock</title>
+  <desc id="desc">Kanban-like pipeline columns with cards and metrics.</desc>
+  <defs>
+    <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="#f8fafc" />
+  <rect x="32" y="24" width="1136" height="72" rx="18" fill="#ffffff" stroke="#e2e8f0" />
+  <rect x="32" y="108" width="1136" height="540" rx="18" fill="url(#panel)" stroke="#e2e8f0" />
+
+  <rect x="52" y="132" width="260" height="480" rx="16" fill="#ffffff" stroke="#e2e8f0" />
+  <rect x="332" y="132" width="260" height="480" rx="16" fill="#ffffff" stroke="#e2e8f0" />
+  <rect x="612" y="132" width="260" height="480" rx="16" fill="#ffffff" stroke="#e2e8f0" />
+  <rect x="892" y="132" width="260" height="480" rx="16" fill="#ffffff" stroke="#e2e8f0" />
+
+  <rect x="72" y="148" width="180" height="18" rx="9" fill="#0f172a" opacity="0.8" />
+  <rect x="352" y="148" width="180" height="18" rx="9" fill="#0f172a" opacity="0.8" />
+  <rect x="632" y="148" width="180" height="18" rx="9" fill="#0f172a" opacity="0.8" />
+  <rect x="912" y="148" width="180" height="18" rx="9" fill="#0f172a" opacity="0.8" />
+
+  <rect x="72" y="176" width="120" height="12" rx="6" fill="#2563eb" opacity="0.3" />
+  <rect x="352" y="176" width="120" height="12" rx="6" fill="#2563eb" opacity="0.3" />
+  <rect x="632" y="176" width="120" height="12" rx="6" fill="#22c55e" opacity="0.3" />
+  <rect x="912" y="176" width="120" height="12" rx="6" fill="#eab308" opacity="0.4" />
+
+  <g fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5">
+    <rect x="64" y="208" width="232" height="96" rx="14" />
+    <rect x="64" y="316" width="232" height="96" rx="14" />
+    <rect x="64" y="424" width="232" height="96" rx="14" />
+    <rect x="344" y="208" width="232" height="96" rx="14" />
+    <rect x="344" y="316" width="232" height="96" rx="14" />
+    <rect x="624" y="208" width="232" height="96" rx="14" />
+    <rect x="624" y="316" width="232" height="96" rx="14" />
+    <rect x="624" y="424" width="232" height="96" rx="14" />
+    <rect x="904" y="208" width="232" height="96" rx="14" />
+    <rect x="904" y="316" width="232" height="96" rx="14" />
+    <rect x="904" y="424" width="232" height="96" rx="14" />
+  </g>
+
+  <g fill="#0f172a" opacity="0.75">
+    <rect x="82" y="228" width="120" height="12" rx="6" />
+    <rect x="82" y="336" width="140" height="12" rx="6" />
+    <rect x="82" y="444" width="110" height="12" rx="6" />
+    <rect x="362" y="228" width="150" height="12" rx="6" />
+    <rect x="362" y="336" width="120" height="12" rx="6" />
+    <rect x="642" y="228" width="150" height="12" rx="6" />
+    <rect x="642" y="336" width="150" height="12" rx="6" />
+    <rect x="642" y="444" width="130" height="12" rx="6" />
+    <rect x="922" y="228" width="150" height="12" rx="6" />
+    <rect x="922" y="336" width="150" height="12" rx="6" />
+    <rect x="922" y="444" width="150" height="12" rx="6" />
+  </g>
+
+  <g fill="#94a3b8">
+    <rect x="82" y="248" width="160" height="10" rx="5" />
+    <rect x="82" y="356" width="150" height="10" rx="5" />
+    <rect x="82" y="464" width="160" height="10" rx="5" />
+    <rect x="362" y="248" width="140" height="10" rx="5" />
+    <rect x="362" y="356" width="150" height="10" rx="5" />
+    <rect x="642" y="248" width="150" height="10" rx="5" />
+    <rect x="642" y="356" width="130" height="10" rx="5" />
+    <rect x="642" y="464" width="160" height="10" rx="5" />
+    <rect x="922" y="248" width="140" height="10" rx="5" />
+    <rect x="922" y="356" width="160" height="10" rx="5" />
+    <rect x="922" y="464" width="180" height="10" rx="5" />
+  </g>
+</svg>
