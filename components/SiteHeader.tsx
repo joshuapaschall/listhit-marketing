@@ -4,7 +4,7 @@ import { Container } from "./Container";
 import { Button } from "./Button";
 
 const navLinks = [
-  { href: "/get-started", label: "Get started" },
+  { href: "/signup", label: "Start free trial" },
   { href: "/product", label: "Product" },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
@@ -18,7 +18,7 @@ export function SiteHeader() {
       <Container>
         <div className="site-header__bar">
           <Link className="brand" href="/">
-            <Image src="/icon.png" alt="ListHit logo" width={32} height={32} className="brand-mark" priority />
+            <Image src="/logo-mark.svg" alt="ListHit logo" width={32} height={32} className="brand-mark" priority />
             <span>ListHit</span>
           </Link>
           <div className="nav-links" style={{ alignItems: "center" }}>
@@ -29,8 +29,8 @@ export function SiteHeader() {
                 </Link>
               ))}
             </nav>
-            <Button href="/get-started" className="nav-cta">
-              Get started
+            <Button href="/signup" className="nav-cta">
+              Start free trial
             </Button>
           </div>
         </div>

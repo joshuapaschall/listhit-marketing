@@ -12,8 +12,8 @@ const plans = [
     price: "$79/mo",
     description: "For solo investors and new dispo managers.",
     features: ["1 user", "5,000 buyers", "Tags, notes, saved segments", "Deal & offer tracking", "Targeted deal distribution"],
-    cta: "Log in",
-    href: "/login",
+    cta: "Start free trial",
+    href: "/signup",
   },
   {
     name: "Team",
@@ -35,12 +35,18 @@ const plans = [
 ];
 
 export default function PricingPage() {
+  const billingLive = false;
+  const billingCopy = billingLive
+    ? "Billing is live. Choose a plan to start your subscription."
+    : "Early access: billing is not enabled yet. Start your free trial—no credit card required.";
+
   return (
     <Container>
       <section className="section">
         <div className="eyebrow">Pricing</div>
         <h1>Pricing that matches your pipeline.</h1>
         <p>Choose a plan that fits how your team manages buyers and distributes deals.</p>
+        <p className="muted" style={{ marginTop: 6 }}>{billingCopy}</p>
       </section>
 
       <section className="section card-grid">
