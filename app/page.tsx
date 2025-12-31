@@ -55,11 +55,32 @@ export default function Home() {
                 Organize buyers, manage deals and offers, and distribute opportunities to the right investors fast. ListHit keeps your pipeline,
                 buyer segments, and team workflow in one workspace.
               </p>
-              <div className="cta-row" style={{ marginTop: 18 }}>
-                <Button href="/signup">Get started</Button>
-                <Button variant="secondary" href="/contact">
-                  Contact support
-                </Button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 18 }}>
+                <form action="/signup" method="GET" className="card" style={{ display: "flex", flexDirection: "column", gap: 8, padding: 14 }}>
+                  <div className="cta-row" style={{ alignItems: "center" }}>
+                    <input
+                      className="input"
+                      type="email"
+                      name="email"
+                      required
+                      placeholder="Work email"
+                      aria-label="Work email"
+                      style={{ minWidth: 240, flex: 1 }}
+                    />
+                    <Button type="submit">Start free trial</Button>
+                  </div>
+                  <div className="muted" style={{ fontSize: 14 }}>
+                    14-day free trial • No credit card required
+                  </div>
+                  <p className="muted" style={{ fontSize: 13, margin: 0 }}>
+                    By continuing, you agree to receive account emails from ListHit. Unsubscribe anytime.
+                  </p>
+                </form>
+                <div className="cta-row">
+                  <Button variant="secondary" href="/contact">
+                    Contact support
+                  </Button>
+                </div>
               </div>
               <div className="hero-meta">
                 <div className="pill">
@@ -180,10 +201,10 @@ export default function Home() {
             <div className="two-column" style={{ alignItems: "center" }}>
               <div>
                 <h2>Ready to move deals faster?</h2>
-                <p>Get started to create your workspace or contact support and we’ll help you configure notifications and onboarding.</p>
+                <p>Start your free trial to create your workspace or contact support and we’ll help you configure notifications and onboarding.</p>
               </div>
               <div className="cta-row" style={{ justifyContent: "flex-end" }}>
-                <Button href="/signup">Get started</Button>
+                <Button href="/signup">Start free trial</Button>
                 <Button variant="secondary" href="/contact">
                   Contact support
                 </Button>

@@ -9,7 +9,7 @@ type FormState = {
   message: string;
 };
 
-export function SignupForm() {
+export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -83,7 +83,7 @@ export function SignupForm() {
           </div>
           <div className="form-field">
             <label htmlFor="email">Work email</label>
-            <input className="input" id="email" name="email" type="email" required placeholder="you@company.com" />
+            <input className="input" id="email" name="email" type="email" required placeholder="you@company.com" defaultValue={initialEmail} />
           </div>
         </div>
         <div className="form-row">
