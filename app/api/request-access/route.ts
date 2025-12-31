@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyTurnstileToken } from "../../../lib/turnstile";
 
 type RequestAccessPayload = {
   fullName?: string;
@@ -10,6 +11,7 @@ type RequestAccessPayload = {
   agreeToTerms?: boolean;
   marketingOptIn?: boolean;
   website?: string;
+  turnstileToken?: string;
 };
 
 const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
@@ -36,6 +38,7 @@ function isValidEmail(email: string) {
 export async function POST(req: NextRequest) {
   const ip = req.ip || req.headers.get("x-forwarded-for") || "unknown";
   const userAgent = req.headers.get("user-agent") || "unknown";
+  const remoteIp = typeof ip === "string" && ip !== "unknown" ? ip.split(",")[0]?.trim() : undefined;
 
   if (!rateLimit(ip)) {
     return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
@@ -48,7 +51,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }
 
-  const { fullName, email, company, role, message, agreeToTerms, marketingOptIn, website } = body;
+  const { fullName, email, company, role, message, agreeToTerms, marketingOptIn, website, turnstileToken } = body;
 
   if (website && website.trim().length > 0) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
@@ -64,6 +67,11 @@ export async function POST(req: NextRequest) {
 
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
+  }
+
+  const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
+  if (!verification.success) {
+    return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;

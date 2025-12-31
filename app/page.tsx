@@ -1,5 +1,6 @@
 import { Button } from "../components/Button";
 import { Container } from "../components/Container";
+import { TurnstileWidget } from "../components/TurnstileWidget";
 
 const capabilityCards = [
   {
@@ -72,6 +73,7 @@ export default function Home() {
                   <div className="muted" style={{ fontSize: 14 }}>
                     14-day free trial • No credit card required
                   </div>
+                  <TurnstileWidget action="homepage_lead" />
                   <p className="muted" style={{ fontSize: 13, margin: 0 }}>
                     By continuing, you agree to receive account emails from ListHit. Unsubscribe anytime.
                   </p>
@@ -81,6 +83,9 @@ export default function Home() {
                     Contact support
                   </Button>
                 </div>
+                <p className="muted" style={{ fontSize: 13, margin: 0 }}>
+                  Only permission-based email. No cold outreach or purchased lists.
+                </p>
               </div>
               <div className="hero-meta">
                 <div className="pill">

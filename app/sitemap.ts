@@ -11,6 +11,7 @@ const routes = [
   "/terms",
   "/acceptable-use",
   "/anti-spam",
+  "/email-compliance",
   "/security",
   "/login",
 ];

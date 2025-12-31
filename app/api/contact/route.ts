@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyTurnstileToken } from "../../../lib/turnstile";
 
 type ContactPayload = {
   name?: string;
@@ -8,6 +9,7 @@ type ContactPayload = {
   message?: string;
   company?: string;
   website?: string;
+  turnstileToken?: string;
 };
 
 const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
@@ -46,7 +48,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }
 
-  const { name, email, phone, subject, message, company, website } = body;
+  const { name, email, phone, subject, message, company, website, turnstileToken } = body;
+  const remoteIp = typeof ip === "string" && ip !== "unknown" ? ip.split(",")[0]?.trim() : undefined;
 
   if ((company && company.trim().length > 0) || (website && website.trim().length > 0)) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
@@ -54,6 +57,11 @@ export async function POST(req: NextRequest) {
 
   if (!name || !email || !subject || !message) {
     return NextResponse.json({ error: "Name, email, subject, and message are required." }, { status: 400 });
+  }
+
+  const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
+  if (!verification.success) {
+    return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
   }
 
   if (message.trim().length < 12) {
