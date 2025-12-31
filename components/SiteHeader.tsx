@@ -4,7 +4,7 @@ import { Container } from "./Container";
 import { Button } from "./Button";
 
 const navLinks = [
-  { href: "/signup", label: "Get started" },
+  { href: "/signup", label: "Start free trial" },
   { href: "/product", label: "Product" },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
@@ -30,7 +30,7 @@ export function SiteHeader() {
               ))}
             </nav>
             <Button href="/signup" className="nav-cta">
-              Get started
+              Start free trial
             </Button>
           </div>
         </div>

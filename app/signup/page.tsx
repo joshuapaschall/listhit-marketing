@@ -7,7 +7,15 @@ export const metadata = {
   description: "Create your ListHit account to access buyer CRM and deal distribution tools.",
 };
 
-export default function SignupPage() {
+export default function SignupPage({
+  searchParams,
+}: {
+  searchParams?: {
+    email?: string;
+  };
+}) {
+  const initialEmail = searchParams?.email ?? "";
+
   return (
     <Container>
       <section className="section" style={{ maxWidth: 800, margin: "0 auto" }}>
@@ -26,7 +34,7 @@ export default function SignupPage() {
         </p>
       </section>
       <section className="section" style={{ paddingTop: 0, maxWidth: 800, margin: "0 auto" }}>
-        <SignupForm />
+        <SignupForm initialEmail={initialEmail} />
       </section>
     </Container>
   );
