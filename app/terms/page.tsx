@@ -5,6 +5,11 @@ export const metadata = {
   description: "Terms governing use of the ListHit platform.",
 };
 
+const companyName = "ListHit, Inc.";
+const mailingAddress = "2261 Market Street #5480, San Francisco, CA 94114";
+const supportEmail = "support@listhit.io";
+const abuseEmail = "abuse@listhit.io";
+
 export default function TermsPage() {
   return (
     <Container>
@@ -56,8 +61,11 @@ export default function TermsPage() {
         <div className="card highlight-box">
           <h3>Questions</h3>
           <p className="muted">
-            Contact <a href="mailto:support@listhit.io">support@listhit.io</a> with any questions about
-            these terms.
+            Contact <a href={`mailto:${supportEmail}`}>{supportEmail}</a> with any questions about these terms.
+          </p>
+          <p className="muted" style={{ marginTop: 10 }}>
+            {companyName} • {mailingAddress} • Abuse: <a href={`mailto:${abuseEmail}`}>{abuseEmail}</a> • Support:{" "}
+            <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
           </p>
         </div>
       </section>

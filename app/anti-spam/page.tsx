@@ -16,6 +16,9 @@ export default function AntiSpamPage() {
           documented consent from recipients. We ban purchased or scraped lists and require clear
           unsubscribe handling.
         </p>
+        <p className="muted" style={{ marginTop: 10 }}>
+          Only permission-based email. No cold outreach or purchased lists.
+        </p>
       </section>
 
       <section className="section two-column">

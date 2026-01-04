@@ -16,6 +16,9 @@ export default function AcceptableUsePage() {
           contacts, or any outreach that lacks clear consent. This policy helps keep deliverability
           healthy and protects recipients.
         </p>
+        <p className="muted" style={{ marginTop: 10 }}>
+          Only permission-based email. No cold outreach or purchased lists.
+        </p>
       </section>
 
       <section className="section two-column">

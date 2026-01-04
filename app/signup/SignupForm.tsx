@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "../../components/Button";
+import { TurnstileWidget } from "../../components/TurnstileWidget";
 
 type FormState = {
   status: "idle" | "loading" | "success" | "error";
@@ -16,6 +17,7 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const turnstileToken = formData.get("cf-turnstile-response")?.toString() || "";
 
     const payload = {
       fullName: formData.get("fullName")?.toString() || "",
@@ -23,9 +25,16 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       password: formData.get("password")?.toString() || "",
       company: formData.get("company")?.toString() || "",
       acceptedTerms: formData.get("acceptedTerms") === "on",
+      turnstileToken,
     };
 
     setState({ status: "loading", message: "" });
+
+    const resetTurnstile = () => {
+      if (typeof window !== "undefined" && window.turnstile) {
+        window.turnstile.reset();
+      }
+    };
 
     try {
       const response = await fetch("/api/signup", {
@@ -38,17 +47,20 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
 
       if (!response.ok) {
         setState({ status: "error", message: data.error || "Could not create your account. Please try again." });
+        resetTurnstile();
         return;
       }
 
       form.reset();
       setState({ status: "success", message: "" });
+      resetTurnstile();
     } catch (error) {
       console.error("Signup failed", error);
       setState({
         status: "error",
         message: "We could not create your account automatically. Please try again or contact support@listhit.io.",
       });
+      resetTurnstile();
     }
   }
 
@@ -118,6 +130,7 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
             .
           </span>
         </label>
+        <TurnstileWidget action="signup" />
         <Button type="submit" disabled={state.status === "loading"}>
           {state.status === "loading" ? "Creating account..." : "Create account"}
         </Button>

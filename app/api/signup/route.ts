@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendVerificationEmail } from "../../../lib/ses";
+import { verifyTurnstileToken } from "../../../lib/turnstile";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,7 @@ type SignupPayload = {
   password?: string;
   company?: string;
   acceptedTerms?: boolean;
+  turnstileToken?: string;
 };
 
 function isValidEmail(email: string) {
@@ -24,7 +26,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }
 
-  const { fullName, email, password, company, acceptedTerms } = body;
+  const { fullName, email, password, company, acceptedTerms, turnstileToken } = body;
+  const remoteIpHeader = req.ip || req.headers.get("x-forwarded-for") || undefined;
+  const remoteIp = typeof remoteIpHeader === "string" && remoteIpHeader !== "unknown" ? remoteIpHeader.split(",")[0]?.trim() : undefined;
 
   if (!fullName || !email || !password) {
     return NextResponse.json({ error: "Full name, email, and password are required." }, { status: 400 });
@@ -36,6 +40,11 @@ export async function POST(req: NextRequest) {
 
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
+  }
+
+  const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
+  if (!verification.success) {
+    return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
   }
 
   if (password.length < 8) {
