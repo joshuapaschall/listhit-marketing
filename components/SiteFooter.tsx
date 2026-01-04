@@ -1,56 +1,133 @@
 import Link from "next/link";
-import { Container } from "./Container";
-
-const footerLinks = [
-  { href: "/privacy", label: "Privacy" },
-  { href: "/terms", label: "Terms" },
-  { href: "/acceptable-use", label: "Acceptable Use" },
-  { href: "/anti-spam", label: "Anti-Spam" },
-  { href: "/email-compliance", label: "Email Compliance" },
-  { href: "/security", label: "Security" },
-  { href: "/contact", label: "Contact" },
-];
-
-const companyName = "ListHit, Inc.";
-const mailingAddress = "2261 Market Street #5480, San Francisco, CA 94114";
-const supportEmail = "support@listhit.io";
-const abuseEmail = "abuse@listhit.io";
 
 export function SiteFooter() {
+  // These are safe to render publicly. Keep them configurable so you can match whatever
+  // you put in your SES production access request (brand name, support, abuse, mailing address).
+  const brandName = process.env.NEXT_PUBLIC_BRAND_NAME || "ListHit";
+  const tagline =
+    process.env.NEXT_PUBLIC_TAGLINE ||
+    "Buyer CRM and deal distribution for real estate teams.";
+
+  const legalEntityName =
+    process.env.NEXT_PUBLIC_LEGAL_ENTITY_NAME || brandName;
+
+  const mailingAddress =
+    process.env.NEXT_PUBLIC_MAILING_ADDRESS ||
+    "2261 Market Street #5480, San Francisco, CA 94114";
+
+  const supportEmail =
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@listhit.io";
+
+  const abuseEmail = process.env.NEXT_PUBLIC_ABUSE_EMAIL || "abuse@listhit.io";
+
+  const supportPhone = process.env.NEXT_PUBLIC_SUPPORT_PHONE || "";
+
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="site-footer">
-      <Container>
-        <div className="footer-grid">
+    <footer className="mt-20 border-t border-gray-200 bg-white">
+      <div className="mx-auto max-w-7xl px-6 py-10">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="brand" style={{ gap: 6, fontSize: 16 }}>
-              <span>ListHit</span>
-            </div>
-            <div className="muted" style={{ marginTop: 6 }}>
-              Buyer CRM and deal distribution for real estate teams.
-            </div>
-            <div className="muted" style={{ marginTop: 10, fontSize: 14, lineHeight: 1.6 }}>
-              <div>{companyName}</div>
+            <div className="text-base font-semibold text-gray-900">{brandName}</div>
+            <p className="mt-2 text-sm text-gray-600">{tagline}</p>
+            <div className="mt-4 space-y-1 text-sm text-gray-600">
+              <div>{legalEntityName}</div>
               <div>{mailingAddress}</div>
               <div>
-                Support: <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
+                Support:{" "}
+                <a
+                  className="underline"
+                  href={`mailto:${supportEmail}`}
+                >
+                  {supportEmail}
+                </a>
               </div>
               <div>
-                Abuse: <a href={`mailto:${abuseEmail}`}>{abuseEmail}</a>
+                Abuse:{" "}
+                <a className="underline" href={`mailto:${abuseEmail}`}>
+                  {abuseEmail}
+                </a>
               </div>
+              {supportPhone ? (
+                <div>
+                  Phone:{" "}
+                  <a className="underline" href={`tel:${supportPhone}`}>
+                    {supportPhone}
+                  </a>
+                </div>
+              ) : null}
             </div>
           </div>
-          <div className="footer-links" aria-label="Secondary navigation">
-            {footerLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="nav-link">
-                {link.label}
-              </Link>
-            ))}
+
+          <div>
+            <div className="text-sm font-semibold text-gray-900">Company</div>
+            <ul className="mt-4 space-y-2 text-sm text-gray-600">
+              <li>
+                <Link href="/pricing" className="hover:text-gray-900">
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="hover:text-gray-900">
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-gray-900">
+                  Contact
+                </Link>
+              </li>
+            </ul>
           </div>
-          <div className="muted" style={{ textAlign: "right" }}>
-            © {new Date().getFullYear()} ListHit. All rights reserved.
+
+          <div>
+            <div className="text-sm font-semibold text-gray-900">Legal</div>
+            <ul className="mt-4 space-y-2 text-sm text-gray-600">
+              <li>
+                <Link href="/privacy" className="hover:text-gray-900">
+                  Privacy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="hover:text-gray-900">
+                  Terms
+                </Link>
+              </li>
+              <li>
+                <Link href="/acceptable-use" className="hover:text-gray-900">
+                  Acceptable Use
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-sm font-semibold text-gray-900">Email compliance</div>
+            <ul className="mt-4 space-y-2 text-sm text-gray-600">
+              <li>
+                <Link href="/anti-spam" className="hover:text-gray-900">
+                  Anti-Spam
+                </Link>
+              </li>
+              <li>
+                <Link href="/email-compliance" className="hover:text-gray-900">
+                  Email Compliance
+                </Link>
+              </li>
+              <li>
+                <Link href="/security" className="hover:text-gray-900">
+                  Security
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
-      </Container>
+
+        <div className="mt-10 border-t border-gray-200 pt-6 text-sm text-gray-500">
+          © {year} {brandName}. All rights reserved.
+        </div>
+      </div>
     </footer>
   );
 }

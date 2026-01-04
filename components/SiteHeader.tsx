@@ -18,7 +18,7 @@ export function SiteHeader() {
       <Container>
         <div className="site-header__bar">
           <Link className="brand" href="/">
-            <Image src="/logo-mark.svg" alt="ListHit logo" width={32} height={32} className="brand-mark" priority />
+            <Image src="/logo.png" alt="ListHit logo" width={32} height={32} className="brand-mark" priority />
             <span>ListHit</span>
           </Link>
           <div className="nav-links" style={{ alignItems: "center" }}>

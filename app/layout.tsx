@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     description,
     url: baseUrl,
     siteName,
-    images: [{ url: "/logo-mark.svg", width: 1200, height: 630, alt: "ListHit" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "ListHit" }],
     locale: "en_US",
     type: "website",
   },
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteName,
     description,
-    images: ["/logo-mark.svg"],
+    images: ["/og.png"],
   },
   alternates: {
     canonical: baseUrl,
