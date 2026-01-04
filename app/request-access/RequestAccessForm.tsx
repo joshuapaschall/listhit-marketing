@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "../../components/Button";
+import { TurnstileWidget } from "../../components/TurnstileWidget";
 
 type FormState = {
   status: "idle" | "loading" | "success" | "error";
@@ -15,6 +16,7 @@ export function RequestAccessForm() {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const turnstileToken = formData.get("cf-turnstile-response")?.toString() || "";
 
     setState({ status: "loading", message: "" });
 
@@ -27,6 +29,13 @@ export function RequestAccessForm() {
       agreeToTerms: formData.get("agreeToTerms") === "on",
       marketingOptIn: formData.get("marketingOptIn") === "on",
       website: formData.get("website")?.toString() || "",
+      turnstileToken,
+    };
+
+    const resetTurnstile = () => {
+      if (typeof window !== "undefined" && window.turnstile) {
+        window.turnstile.reset();
+      }
     };
 
     try {
@@ -40,17 +49,20 @@ export function RequestAccessForm() {
 
       if (!response.ok) {
         setState({ status: "error", message: data.error || "Something went wrong. Please try again." });
+        resetTurnstile();
         return;
       }
 
       form.reset();
       setState({ status: "success", message: data.message || "Thanks — we received your request." });
+      resetTurnstile();
     } catch (error) {
       console.error("Request access failed", error);
       setState({
         status: "error",
         message: "We could not submit your request automatically. Please email support@listhit.io.",
       });
+      resetTurnstile();
     }
   }
 
@@ -119,6 +131,7 @@ export function RequestAccessForm() {
             <span>Send me product updates and announcements (optional).</span>
           </label>
         </div>
+        <TurnstileWidget action="request_access" />
         <Button type="submit" disabled={state.status === "loading"}>
           {state.status === "loading" ? "Submitting..." : "Submit request"}
         </Button>

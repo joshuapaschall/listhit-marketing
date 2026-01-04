@@ -5,6 +5,11 @@ export const metadata = {
   description: "How ListHit collects, uses, and protects your data.",
 };
 
+const companyName = "ListHit, Inc.";
+const mailingAddress = "2261 Market Street #5480, San Francisco, CA 94114";
+const supportEmail = "support@listhit.io";
+const abuseEmail = "abuse@listhit.io";
+
 export default function PrivacyPage() {
   return (
     <Container>
@@ -77,7 +82,10 @@ export default function PrivacyPage() {
         <div className="card highlight-box">
           <h3>Contact</h3>
           <p className="muted">
-            For privacy requests or questions, email us at <a href="mailto:support@listhit.io">support@listhit.io</a>.
+            For privacy requests or questions, email us at <a href={`mailto:${supportEmail}`}>{supportEmail}</a>.
+          </p>
+          <p className="muted" style={{ marginTop: 10 }}>
+            {companyName} • {mailingAddress} • Abuse: <a href={`mailto:${abuseEmail}`}>{abuseEmail}</a>
           </p>
         </div>
       </section>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "../../../components/Button";
+import { TurnstileWidget } from "../../../components/TurnstileWidget";
 
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -12,12 +13,28 @@ export function ContactForm() {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const turnstileToken = formData.get("cf-turnstile-response")?.toString() || "";
 
     setStatus("loading");
     setMessage("");
     setMailtoLink(null);
 
-    const payload = Object.fromEntries(formData.entries());
+    const payload = {
+      name: formData.get("name")?.toString() || "",
+      email: formData.get("email")?.toString() || "",
+      phone: formData.get("phone")?.toString() || "",
+      subject: formData.get("subject")?.toString() || "",
+      message: formData.get("message")?.toString() || "",
+      company: formData.get("company")?.toString() || "",
+      website: formData.get("website")?.toString() || "",
+      turnstileToken,
+    };
+
+    const resetTurnstile = () => {
+      if (typeof window !== "undefined" && window.turnstile) {
+        window.turnstile.reset();
+      }
+    };
 
     try {
       const res = await fetch("/api/contact", {
@@ -32,12 +49,14 @@ export function ContactForm() {
         setMessage(data.message || "Thanks! We received your message.");
         setMailtoLink(data.mailto || null);
         form.reset();
+        resetTurnstile();
       } else {
         if (data.mailto) {
           setStatus("success");
           setMessage(data.message || "Please email support@listhit.io so we can respond quickly.");
           setMailtoLink(data.mailto);
           form.reset();
+          resetTurnstile();
         } else {
           setStatus("error");
           setMessage(data.error || "Something went wrong. Please try again.");
@@ -48,6 +67,7 @@ export function ContactForm() {
       setStatus("success");
       setMessage("We could not submit automatically. Please email support@listhit.io so we can assist right away.");
       setMailtoLink("mailto:support@listhit.io?subject=ListHit%20Support%20Request");
+      resetTurnstile();
     }
   }
 
@@ -87,6 +107,7 @@ export function ContactForm() {
           <label htmlFor="message">Message</label>
           <textarea className="textarea" id="message" name="message" required placeholder="Share details so we can help quickly." />
         </div>
+        <TurnstileWidget action="contact" />
         <Button type="submit" disabled={status === "loading"}>
           {status === "loading" ? "Sending..." : "Send message"}
         </Button>
