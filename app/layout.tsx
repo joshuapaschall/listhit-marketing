@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import Script from "next/script";
 import { SiteHeader } from "../components/SiteHeader";
 import { SiteFooter } from "../components/SiteFooter";
+import { siteConfig } from "../lib/siteConfig";
 
 const siteName = "ListHit";
 const description =
@@ -39,10 +40,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const showTurnstileWarning = !turnstileSiteKey && process.env.NODE_ENV !== "production";
+  const supportEmail = siteConfig.supportEmail;
 
   return (
     <html lang="en">
       <body className="page-shell">
+        {showTurnstileWarning ? (
+          <div className="dev-banner">
+            Cloudflare Turnstile is not configured. Set <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code> and{" "}
+            <code>TURNSTILE_SECRET_KEY</code>. Need help?{" "}
+            <a href={`mailto:${supportEmail}`}>Email support</a>.
+          </div>
+        ) : null}
         {turnstileSiteKey ? (
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js"
