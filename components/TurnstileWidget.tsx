@@ -1,5 +1,7 @@
 "use client";
 
+import { siteConfig } from "../lib/siteConfig";
+
 type TurnstileWidgetProps = {
   action?: string;
   className?: string;
@@ -7,16 +9,16 @@ type TurnstileWidgetProps = {
 
 export function TurnstileWidget({ action = "form", className }: TurnstileWidgetProps) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@listhit.io";
+  const supportEmail = siteConfig.supportEmail;
 
   // If Turnstile isn't configured, avoid showing a broken-looking callout in production.
   if (!siteKey) {
     if (process.env.NODE_ENV !== "production") {
       return (
-        <p className="text-sm text-slate-500">
-          Human verification isn&apos;t configured. Set <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code> (and
-          <code>TURNSTILE_SECRET_KEY</code>) in your environment. If you need help, email{" "}
-          <a className="underline" href={`mailto:${supportEmail}`}>
+        <p className="turnstile-warning">
+          <strong>Human verification isn&apos;t configured.</strong> Set <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code>{" "}
+          and <code>TURNSTILE_SECRET_KEY</code> in your environment. If you need help, email{" "}
+          <a href={`mailto:${supportEmail}`}>
             {supportEmail}
           </a>
           .
