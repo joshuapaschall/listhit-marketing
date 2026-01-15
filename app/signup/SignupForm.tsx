@@ -8,6 +8,13 @@ import { TurnstileWidget } from "../../components/TurnstileWidget";
 type FormState = {
   status: "idle" | "loading" | "success" | "error";
   message: string;
+  emailDelivery?: "sent" | "pending";
+};
+
+type SignupResponse = {
+  message?: string;
+  emailDelivery?: "sent" | "pending";
+  error?: string;
 };
 
 export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
@@ -43,7 +50,7 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as SignupResponse;
 
       if (!response.ok) {
         setState({ status: "error", message: data.error || "Could not create your account. Please try again." });
@@ -52,7 +59,11 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       }
 
       form.reset();
-      setState({ status: "success", message: "" });
+      setState({
+        status: "success",
+        message: data.message || "Check your email to verify your account.",
+        emailDelivery: data.emailDelivery,
+      });
       resetTurnstile();
     } catch (error) {
       console.error("Signup failed", error);
@@ -69,12 +80,21 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       <div className="card">
         <h3>Check your email to verify</h3>
         <p className="muted" style={{ marginTop: 6 }}>
-          We sent a verification link to your email. After verifying, you can sign in at{" "}
+          {state.message} After verifying, you can sign in at{" "}
           <Link href="/login" className="nav-link" style={{ padding: 0 }}>
             app.listhit.io
           </Link>
           .
         </p>
+        {state.emailDelivery === "pending" ? (
+          <p className="muted" style={{ marginTop: 6 }}>
+            If you don&apos;t receive the verification email soon, please contact{" "}
+            <a href="mailto:support@listhit.io" className="nav-link" style={{ padding: 0 }}>
+              support@listhit.io
+            </a>
+            .
+          </p>
+        ) : null}
         <div className="cta-row" style={{ marginTop: 12 }}>
           <Button href="/login" variant="secondary">
             Go to login
@@ -95,7 +115,15 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
           </div>
           <div className="form-field">
             <label htmlFor="email">Work email</label>
-            <input className="input" id="email" name="email" type="email" required placeholder="you@company.com" defaultValue={initialEmail} />
+            <input
+              className="input"
+              id="email"
+              name="email"
+              type="email"
+              required
+              placeholder="you@company.com"
+              defaultValue={initialEmail}
+            />
           </div>
         </div>
         <div className="form-row">
