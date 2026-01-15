@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendRequestAccessConfirmationEmail, sendRequestAccessInternalNotification } from "../../../lib/ses";
 import { verifyTurnstileToken } from "../../../lib/turnstile";
 
 type RequestAccessPayload = {
@@ -92,38 +93,37 @@ export async function POST(req: NextRequest) {
   };
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    return NextResponse.json({
-      message:
-        "We received your request. We could not capture it automatically, so please email support@listhit.io and we’ll follow up right away.",
-    });
+    console.error("Supabase is not configured for request access submissions.");
+  } else {
+    try {
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      const { error } = await supabase.from("leads").insert(payload);
+
+      if (error) {
+        console.error("Supabase insert failed", error);
+      }
+    } catch (error) {
+      console.error("Request access submission failed", error);
+    }
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { error } = await supabase.from("leads").insert(payload);
-
-    if (error) {
-      console.error("Supabase insert failed", error);
-      return NextResponse.json(
-        {
-          message:
-            "We received your request. If you don’t get a confirmation within one business day, please email support@listhit.io so we can assist.",
-        },
-        { status: 200 },
-      );
-    }
-
-    return NextResponse.json({
-      message: "Thanks — we received your request.",
+    await sendRequestAccessConfirmationEmail({
+      toEmail: email,
+      toName: fullName,
+      company,
     });
   } catch (error) {
-    console.error("Request access submission failed", error);
-    return NextResponse.json(
-      {
-        message:
-          "We received your request. If you don’t get a confirmation within one business day, please email support@listhit.io so we can assist.",
-      },
-      { status: 200 },
-    );
+    console.error("Failed to send request access confirmation email", error);
   }
+
+  try {
+    await sendRequestAccessInternalNotification({ leadPayload: payload });
+  } catch (error) {
+    console.error("Failed to send request access internal notification", error);
+  }
+
+  return NextResponse.json({
+    message: "We received your request. You’ll get a confirmation email shortly.",
+  });
 }
