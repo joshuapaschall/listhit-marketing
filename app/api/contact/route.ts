@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sendContactInternalNotification, sendContactReceiptEmail } from "../../../lib/ses";
 import { verifyTurnstileToken } from "../../../lib/turnstile";
 
 type ContactPayload = {
@@ -82,11 +83,36 @@ export async function POST(req: NextRequest) {
     source: "listhit.io/contact",
   };
 
-  if (!endpoint) {
-    const fallbackMessage =
-      "We received your request. For the fastest response, email support@listhit.io or click the link below to open your email client.";
-    return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto });
+  const emailResults = await Promise.allSettled([
+    sendContactReceiptEmail({ toEmail: email, toName: name, subject }),
+    sendContactInternalNotification({
+      payload: {
+        ...payload,
+        ip: remoteIp,
+        userAgent: req.headers.get("user-agent") || undefined,
+        receivedAt: new Date().toISOString(),
+      },
+    }),
+  ]);
+
+  const emailFailures = emailResults.filter((result) => result.status === "rejected");
+  if (emailFailures.length > 0) {
+    emailFailures.forEach((result) => {
+      console.error("Contact email failed", result);
+    });
   }
+
+  if (!endpoint) {
+    if (emailFailures.length > 0) {
+      const fallbackMessage =
+        "We received your request. For the fastest response, email support@listhit.io or click the link below to open your email client.";
+      return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto });
+    }
+
+    return NextResponse.json({ message: "Thanks! We received your message and will respond shortly." });
+  }
+
+  let endpointDelivered = false;
 
   try {
     const controller = new AbortController();
@@ -102,16 +128,18 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       console.error("Support endpoint responded with status", response.status);
-      const fallbackMessage =
-        "We could not deliver your request automatically. Please email support@listhit.io so we can respond quickly.";
-      return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto }, { status: 200 });
+    } else {
+      endpointDelivered = true;
     }
-
-    return NextResponse.json({ message: "Thanks! We received your message and will respond shortly." });
   } catch (error) {
     console.error("Contact submission failed", error);
+  }
+
+  if (!endpointDelivered && emailFailures.length > 0) {
     const fallbackMessage =
       "We could not deliver your request automatically. Please email support@listhit.io so we can respond quickly.";
     return NextResponse.json({ message: fallbackMessage, mailto: fallbackMailto }, { status: 200 });
   }
+
+  return NextResponse.json({ message: "Thanks! We received your message and will respond shortly." });
 }
