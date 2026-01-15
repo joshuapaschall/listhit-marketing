@@ -1,14 +1,12 @@
 import { Container } from "../../components/Container";
+import { siteConfig } from "../../lib/siteConfig";
 
 export const metadata = {
   title: "Terms of Service",
   description: "Terms governing use of the ListHit platform.",
 };
 
-const companyName = "ListHit, Inc.";
-const mailingAddress = "2261 Market Street #5480, San Francisco, CA 94114";
-const supportEmail = "support@listhit.io";
-const abuseEmail = "abuse@listhit.io";
+const { companyName, companyAddress, supportEmail, abuseEmail } = siteConfig;
 
 export default function TermsPage() {
   return (
@@ -17,8 +15,8 @@ export default function TermsPage() {
         <div className="eyebrow">Terms</div>
         <h1>Terms of Service</h1>
         <p>
-          These terms govern your use of ListHit. By accessing the platform, you agree to comply with
-          these conditions and our Acceptable Use Policy.
+          These terms govern your use of {companyName}. By accessing the platform, you agree to comply
+          with these conditions and our Acceptable Use Policy.
         </p>
       </section>
 
@@ -52,7 +50,7 @@ export default function TermsPage() {
           <h3>Limitation of liability</h3>
           <p className="muted">
             The service is provided “as is” without warranties. To the fullest extent permitted by law,
-            ListHit is not liable for indirect, incidental, or consequential damages.
+            {companyName} is not liable for indirect, incidental, or consequential damages.
           </p>
         </div>
       </section>
@@ -64,7 +62,7 @@ export default function TermsPage() {
             Contact <a href={`mailto:${supportEmail}`}>{supportEmail}</a> with any questions about these terms.
           </p>
           <p className="muted" style={{ marginTop: 10 }}>
-            {companyName} • {mailingAddress} • Abuse: <a href={`mailto:${abuseEmail}`}>{abuseEmail}</a> • Support:{" "}
+            {companyName} • {companyAddress} • Abuse: <a href={`mailto:${abuseEmail}`}>{abuseEmail}</a> • Support:{" "}
             <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
           </p>
         </div>
