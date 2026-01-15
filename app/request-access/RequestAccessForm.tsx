@@ -54,7 +54,10 @@ export function RequestAccessForm() {
       }
 
       form.reset();
-      setState({ status: "success", message: data.message || "Thanks — we received your request." });
+      setState({
+        status: "success",
+        message: data.message || "We received your request. You’ll get a confirmation email shortly.",
+      });
       resetTurnstile();
     } catch (error) {
       console.error("Request access failed", error);
@@ -69,9 +72,9 @@ export function RequestAccessForm() {
   if (state.status === "success") {
     return (
       <div className="card">
-        <h3>Thanks — we received your request.</h3>
+        <h3>We received your request.</h3>
         <p className="muted" style={{ marginTop: 6 }}>
-          We’ll email you about your request. If you opted into updates, you can opt out anytime.
+          You’ll get a confirmation email shortly. If you opted into updates, you can opt out anytime.
         </p>
       </div>
     );
