@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
 
   const { fullName, email, password, company, acceptedTerms, turnstileToken } = body;
   const remoteIpHeader = req.ip || req.headers.get("x-forwarded-for") || undefined;
-  const remoteIp = typeof remoteIpHeader === "string" && remoteIpHeader !== "unknown" ? remoteIpHeader.split(",")[0]?.trim() : undefined;
+  const remoteIp =
+    typeof remoteIpHeader === "string" && remoteIpHeader !== "unknown" ? remoteIpHeader.split(",")[0]?.trim() : undefined;
 
   if (!fullName || !email || !password) {
     return NextResponse.json({ error: "Full name, email, and password are required." }, { status: 400 });
@@ -100,13 +101,37 @@ export async function POST(req: NextRequest) {
       console.error("Failed to capture signup in waitlist_requests", insertError);
     }
 
-    await sendVerificationEmail({
-      toEmail: email,
-      toName: fullName,
-      actionLink,
-    });
+    try {
+      await sendVerificationEmail({
+        toEmail: email,
+        toName: fullName,
+        actionLink,
+      });
+    } catch (error) {
+      console.error("Failed to send verification email", error);
 
-    return NextResponse.json({ message: "Check your email to verify your account." });
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const { error: failureInsertError } = await supabase.from("signup_email_failures").insert({
+        email,
+        full_name: fullName,
+        error_message: errorMessage,
+        created_at: new Date().toISOString(),
+      });
+
+      if (failureInsertError) {
+        console.error("Failed to capture signup email failure", failureInsertError);
+      }
+
+      return NextResponse.json({
+        message: "Thanks for signing up! We are finishing your signup and will email your verification link shortly.",
+        emailDelivery: "pending",
+      });
+    }
+
+    return NextResponse.json({
+      message: "Check your email to verify your account.",
+      emailDelivery: "sent",
+    });
   } catch (error) {
     console.error("Signup handler failed", error);
     return NextResponse.json(
