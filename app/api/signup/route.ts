@@ -14,11 +14,39 @@ type SignupPayload = {
   turnstileToken?: string;
 };
 
+const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
+const rateLimitMax = 5;
+const rateLimitStore = new Map<string, { count: number; expires: number }>();
+
+function rateLimit(identifier: string) {
+  const now = Date.now();
+  const record = rateLimitStore.get(identifier);
+  if (record && record.expires > now) {
+    if (record.count >= rateLimitMax) return false;
+    record.count += 1;
+    rateLimitStore.set(identifier, record);
+    return true;
+  }
+  rateLimitStore.set(identifier, { count: 1, expires: now + rateLimitWindowMs });
+  return true;
+}
+
 function isValidEmail(email: string) {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
 }
 
 export async function POST(req: NextRequest) {
+  const ipHeader = req.headers.get("x-forwarded-for");
+  const ip = req.ip || ipHeader?.split(",")[0]?.trim() || "unknown";
+  const remoteIp = ip !== "unknown" ? ip : undefined;
+
+  if (!rateLimit(ip)) {
+    return NextResponse.json(
+      { error: "You’ve reached the signup limit. Please wait a bit and try again." },
+      { status: 429 },
+    );
+  }
+
   let body: SignupPayload;
   try {
     body = await req.json();
@@ -27,8 +55,6 @@ export async function POST(req: NextRequest) {
   }
 
   const { fullName, email, password, company, acceptedTerms, turnstileToken } = body;
-  const remoteIpHeader = req.ip || req.headers.get("x-forwarded-for") || undefined;
-  const remoteIp = typeof remoteIpHeader === "string" && remoteIpHeader !== "unknown" ? remoteIpHeader.split(",")[0]?.trim() : undefined;
 
   if (!fullName || !email || !password) {
     return NextResponse.json({ error: "Full name, email, and password are required." }, { status: 400 });
@@ -100,13 +126,37 @@ export async function POST(req: NextRequest) {
       console.error("Failed to capture signup in waitlist_requests", insertError);
     }
 
-    await sendVerificationEmail({
-      toEmail: email,
-      toName: fullName,
-      actionLink,
-    });
+    try {
+      await sendVerificationEmail({
+        toEmail: email,
+        toName: fullName,
+        actionLink,
+      });
+    } catch (error) {
+      console.error("Failed to send verification email", error);
 
-    return NextResponse.json({ message: "Check your email to verify your account." });
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const { error: failureInsertError } = await supabase.from("signup_email_failures").insert({
+        email,
+        full_name: fullName,
+        error_message: errorMessage,
+        created_at: new Date().toISOString(),
+      });
+
+      if (failureInsertError) {
+        console.error("Failed to capture signup email failure", failureInsertError);
+      }
+
+      return NextResponse.json({
+        message: "Thanks for signing up! We are finishing your signup and will email your verification link shortly.",
+        emailDelivery: "pending",
+      });
+    }
+
+    return NextResponse.json({
+      message: "Check your email to verify your account.",
+      emailDelivery: "sent",
+    });
   } catch (error) {
     console.error("Signup handler failed", error);
     return NextResponse.json(

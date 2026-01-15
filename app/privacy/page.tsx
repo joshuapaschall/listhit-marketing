@@ -1,14 +1,12 @@
 import { Container } from "../../components/Container";
+import { siteConfig } from "../../lib/siteConfig";
 
 export const metadata = {
   title: "Privacy Policy",
   description: "How ListHit collects, uses, and protects your data.",
 };
 
-const companyName = "ListHit, Inc.";
-const mailingAddress = "2261 Market Street #5480, San Francisco, CA 94114";
-const supportEmail = "support@listhit.io";
-const abuseEmail = "abuse@listhit.io";
+const { companyName, companyAddress, supportEmail, abuseEmail } = siteConfig;
 
 export default function PrivacyPage() {
   return (
@@ -17,9 +15,9 @@ export default function PrivacyPage() {
         <div className="eyebrow">Privacy</div>
         <h1>Privacy Policy</h1>
         <p>
-          ListHit is committed to protecting your data and only using it to provide our transactional
-          messaging services. This policy explains what we collect, how we use it, and the controls you
-          have.
+          {companyName} is committed to protecting your data and only using it to provide our
+          transactional messaging services. This policy explains what we collect, how we use it, and the
+          controls you have.
         </p>
       </section>
 
@@ -35,7 +33,7 @@ export default function PrivacyPage() {
         <div className="card">
           <h3>How we use data</h3>
           <ul className="list">
-            <li>Operate and improve the ListHit platform.</li>
+            <li>Operate and improve the {companyName} platform.</li>
             <li>Provide support and respond to your requests.</li>
             <li>Detect, investigate, and prevent abuse or security incidents.</li>
           </ul>
@@ -55,7 +53,7 @@ export default function PrivacyPage() {
           <h3>Retention & deletion</h3>
           <p className="muted">
             We retain data for as long as necessary to provide the service and meet legal obligations.
-            You may request deletion of your account data by contacting support@listhit.io, subject to
+            You may request deletion of your account data by contacting {supportEmail}, subject to
             applicable retention requirements.
           </p>
         </div>
@@ -85,7 +83,7 @@ export default function PrivacyPage() {
             For privacy requests or questions, email us at <a href={`mailto:${supportEmail}`}>{supportEmail}</a>.
           </p>
           <p className="muted" style={{ marginTop: 10 }}>
-            {companyName} • {mailingAddress} • Abuse: <a href={`mailto:${abuseEmail}`}>{abuseEmail}</a>
+            {companyName} • {companyAddress} • Abuse: <a href={`mailto:${abuseEmail}`}>{abuseEmail}</a>
           </p>
         </div>
       </section>
