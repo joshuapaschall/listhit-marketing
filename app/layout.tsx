@@ -48,9 +48,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="page-shell">
         {showTurnstileWarning ? (
           <div className="dev-banner">
-            Cloudflare Turnstile is not configured. Set <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code> and{" "}
-            <code>TURNSTILE_SECRET_KEY</code>. Need help?{" "}
-            <a href={`mailto:${supportEmail}`}>Email support</a>.
+            Turnstile is disabled in this environment. Set <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code> and{" "}
+            <code>TURNSTILE_SECRET_KEY</code>. Need help? <a href={`mailto:${supportEmail}`}>Email support</a>.
           </div>
         ) : null}
         {turnstileSiteKey ? (

@@ -11,7 +11,7 @@ export async function verifyTurnstileToken(token: string, remoteIp?: string) {
 
   if (!secretKey) {
     console.error("TURNSTILE_SECRET_KEY is not configured.");
-    return { success: false, message: "Captcha verification is unavailable. Please email support@listhit.io." };
+    return { success: false, message: "Verification is temporarily unavailable. Please try again shortly." };
   }
 
   if (!token) {

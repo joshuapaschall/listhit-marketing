@@ -13,22 +13,25 @@ type RequestAccessPayload = {
   marketingOptIn?: boolean;
   website?: string;
   turnstileToken?: string;
+  verificationPending?: boolean;
 };
 
 const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
 const rateLimitMax = 5;
+const rateLimitPendingMax = 2;
 const rateLimitStore = new Map<string, { count: number; expires: number }>();
+const rateLimitPendingStore = new Map<string, { count: number; expires: number }>();
 
-function rateLimit(identifier: string) {
+function rateLimit(identifier: string, max: number, store: Map<string, { count: number; expires: number }>) {
   const now = Date.now();
-  const record = rateLimitStore.get(identifier);
+  const record = store.get(identifier);
   if (record && record.expires > now) {
-    if (record.count >= rateLimitMax) return false;
+    if (record.count >= max) return false;
     record.count += 1;
-    rateLimitStore.set(identifier, record);
+    store.set(identifier, record);
     return true;
   }
-  rateLimitStore.set(identifier, { count: 1, expires: now + rateLimitWindowMs });
+  store.set(identifier, { count: 1, expires: now + rateLimitWindowMs });
   return true;
 }
 
@@ -41,10 +44,6 @@ export async function POST(req: NextRequest) {
   const userAgent = req.headers.get("user-agent") || "unknown";
   const remoteIp = typeof ip === "string" && ip !== "unknown" ? ip.split(",")[0]?.trim() : undefined;
 
-  if (!rateLimit(ip)) {
-    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
-  }
-
   let body: RequestAccessPayload;
   try {
     body = await req.json();
@@ -52,7 +51,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }
 
-  const { fullName, email, company, role, message, agreeToTerms, marketingOptIn, website, turnstileToken } = body;
+  const {
+    fullName,
+    email,
+    company,
+    role,
+    message,
+    agreeToTerms,
+    marketingOptIn,
+    website,
+    turnstileToken,
+    verificationPending,
+  } = body;
+  const isVerificationPending = Boolean(verificationPending) && !turnstileToken;
+
+  if (
+    !rateLimit(
+      String(ip),
+      isVerificationPending ? rateLimitPendingMax : rateLimitMax,
+      isVerificationPending ? rateLimitPendingStore : rateLimitStore,
+    )
+  ) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  }
 
   if (website && website.trim().length > 0) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
@@ -70,9 +91,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
   }
 
-  const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
-  if (!verification.success) {
-    return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
+  if (!isVerificationPending) {
+    const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
+    if (!verification.success) {
+      return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
+    }
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -89,6 +112,7 @@ export async function POST(req: NextRequest) {
     ip: String(ip),
     user_agent: userAgent,
     source: "listhit.io/request-access",
+    verification_pending: isVerificationPending,
     created_at: new Date().toISOString(),
   };
 

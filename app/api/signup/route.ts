@@ -12,22 +12,25 @@ type SignupPayload = {
   company?: string;
   acceptedTerms?: boolean;
   turnstileToken?: string;
+  verificationPending?: boolean;
 };
 
 const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
 const rateLimitMax = 5;
+const rateLimitPendingMax = 2;
 const rateLimitStore = new Map<string, { count: number; expires: number }>();
+const rateLimitPendingStore = new Map<string, { count: number; expires: number }>();
 
-function rateLimit(identifier: string) {
+function rateLimit(identifier: string, max: number, store: Map<string, { count: number; expires: number }>) {
   const now = Date.now();
-  const record = rateLimitStore.get(identifier);
+  const record = store.get(identifier);
   if (record && record.expires > now) {
-    if (record.count >= rateLimitMax) return false;
+    if (record.count >= max) return false;
     record.count += 1;
-    rateLimitStore.set(identifier, record);
+    store.set(identifier, record);
     return true;
   }
-  rateLimitStore.set(identifier, { count: 1, expires: now + rateLimitWindowMs });
+  store.set(identifier, { count: 1, expires: now + rateLimitWindowMs });
   return true;
 }
 
@@ -40,13 +43,6 @@ export async function POST(req: NextRequest) {
   const ip = req.ip || ipHeader?.split(",")[0]?.trim() || "unknown";
   const remoteIp = ip !== "unknown" ? ip : undefined;
 
-  if (!rateLimit(ip)) {
-    return NextResponse.json(
-      { error: "You’ve reached the signup limit. Please wait a bit and try again." },
-      { status: 429 },
-    );
-  }
-
   let body: SignupPayload;
   try {
     body = await req.json();
@@ -54,7 +50,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }
 
-  const { fullName, email, password, company, acceptedTerms, turnstileToken } = body;
+  const { fullName, email, password, company, acceptedTerms, turnstileToken, verificationPending } = body;
+  const isVerificationPending = Boolean(verificationPending) && !turnstileToken;
+
+  if (
+    !rateLimit(
+      ip,
+      isVerificationPending ? rateLimitPendingMax : rateLimitMax,
+      isVerificationPending ? rateLimitPendingStore : rateLimitStore,
+    )
+  ) {
+    return NextResponse.json(
+      { error: "You’ve reached the signup limit. Please wait a bit and try again." },
+      { status: 429 },
+    );
+  }
 
   if (!fullName || !email || !password) {
     return NextResponse.json({ error: "Full name, email, and password are required." }, { status: 400 });
@@ -68,9 +78,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
   }
 
-  const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
-  if (!verification.success) {
-    return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
+  if (!isVerificationPending) {
+    const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
+    if (!verification.success) {
+      return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
+    }
   }
 
   if (password.length < 8) {
@@ -118,12 +130,31 @@ export async function POST(req: NextRequest) {
       company: company || null,
       source: "signup",
       accepted_terms: true,
+      verification_pending: isVerificationPending,
       created_at: new Date().toISOString(),
     };
 
     const { error: insertError } = await supabase.from("waitlist_requests").insert(waitlistPayload);
     if (insertError) {
       console.error("Failed to capture signup in waitlist_requests", insertError);
+    }
+
+    if (isVerificationPending) {
+      const { error: pendingInsertError } = await supabase.from("signup_email_failures").insert({
+        email,
+        full_name: fullName,
+        error_message: "Turnstile verification pending",
+        created_at: new Date().toISOString(),
+      });
+
+      if (pendingInsertError) {
+        console.error("Failed to capture pending signup email", pendingInsertError);
+      }
+
+      return NextResponse.json({
+        message: "Thanks for signing up! We are finishing your signup and will email your verification link shortly.",
+        emailDelivery: "pending",
+      });
     }
 
     try {
