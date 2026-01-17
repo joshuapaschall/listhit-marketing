@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "../../components/Button";
-import { TurnstileWidget } from "../../components/TurnstileWidget";
+import { TurnstileWidget, TurnstileWidgetHandle } from "../../components/TurnstileWidget";
 
 type FormState = {
   status: "idle" | "loading" | "success" | "error";
@@ -19,12 +19,44 @@ type SignupResponse = {
 
 export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
+
+  const resolveTurnstileToken = async () => {
+    const timeoutMs = 2500;
+    const start = Date.now();
+    const executePromise = turnstileRef.current?.execute() ?? Promise.resolve("");
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<string>((resolve) => {
+      timeoutId = setTimeout(() => resolve(""), timeoutMs);
+    });
+
+    const token = await Promise.race([executePromise, timeoutPromise]);
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    if (token) {
+      return { token, verificationPending: false };
+    }
+
+    const elapsed = Date.now() - start;
+    if (elapsed < timeoutMs) {
+      await new Promise((resolve) => setTimeout(resolve, timeoutMs - elapsed));
+    }
+
+    return { token: "", verificationPending: true };
+  };
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const turnstileToken = formData.get("cf-turnstile-response")?.toString() || "";
+
+    setState({ status: "loading", message: "" });
+
+    const { token: turnstileToken, verificationPending } = await resolveTurnstileToken();
 
     const payload = {
       fullName: formData.get("fullName")?.toString() || "",
@@ -33,14 +65,11 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       company: formData.get("company")?.toString() || "",
       acceptedTerms: formData.get("acceptedTerms") === "on",
       turnstileToken,
+      verificationPending,
     };
 
-    setState({ status: "loading", message: "" });
-
     const resetTurnstile = () => {
-      if (typeof window !== "undefined" && window.turnstile) {
-        window.turnstile.reset();
-      }
+      turnstileRef.current?.reset();
     };
 
     try {
@@ -158,7 +187,7 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
             .
           </span>
         </label>
-        <TurnstileWidget action="signup" />
+        <TurnstileWidget ref={turnstileRef} action="signup" />
         <Button type="submit" disabled={state.status === "loading"}>
           {state.status === "loading" ? "Creating account..." : "Create account"}
         </Button>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "../../components/Button";
-import { TurnstileWidget } from "../../components/TurnstileWidget";
+import { TurnstileWidget, TurnstileWidgetHandle } from "../../components/TurnstileWidget";
 
 type FormState = {
   status: "idle" | "loading" | "success" | "error";
@@ -11,14 +11,44 @@ type FormState = {
 
 export function RequestAccessForm() {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
+
+  const resolveTurnstileToken = async () => {
+    const timeoutMs = 2500;
+    const start = Date.now();
+    const executePromise = turnstileRef.current?.execute() ?? Promise.resolve("");
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<string>((resolve) => {
+      timeoutId = setTimeout(() => resolve(""), timeoutMs);
+    });
+
+    const token = await Promise.race([executePromise, timeoutPromise]);
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    if (token) {
+      return { token, verificationPending: false };
+    }
+
+    const elapsed = Date.now() - start;
+    if (elapsed < timeoutMs) {
+      await new Promise((resolve) => setTimeout(resolve, timeoutMs - elapsed));
+    }
+
+    return { token: "", verificationPending: true };
+  };
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const turnstileToken = formData.get("cf-turnstile-response")?.toString() || "";
 
     setState({ status: "loading", message: "" });
+
+    const { token: turnstileToken, verificationPending } = await resolveTurnstileToken();
 
     const payload = {
       fullName: formData.get("fullName")?.toString() || "",
@@ -30,12 +60,11 @@ export function RequestAccessForm() {
       marketingOptIn: formData.get("marketingOptIn") === "on",
       website: formData.get("website")?.toString() || "",
       turnstileToken,
+      verificationPending,
     };
 
     const resetTurnstile = () => {
-      if (typeof window !== "undefined" && window.turnstile) {
-        window.turnstile.reset();
-      }
+      turnstileRef.current?.reset();
     };
 
     try {
@@ -134,7 +163,7 @@ export function RequestAccessForm() {
             <span>Send me product updates and announcements (optional).</span>
           </label>
         </div>
-        <TurnstileWidget action="request_access" />
+        <TurnstileWidget ref={turnstileRef} action="request_access" />
         <Button type="submit" disabled={state.status === "loading"}>
           {state.status === "loading" ? "Submitting..." : "Submit request"}
         </Button>
