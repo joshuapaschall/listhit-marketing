@@ -100,6 +100,7 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  const marketingSchema = supabase.schema("marketing");
   const redirectTo = process.env.APP_URL ?? "https://app.listhit.io";
 
   try {
@@ -130,21 +131,21 @@ export async function POST(req: NextRequest) {
       company: company || null,
       source: "signup",
       accepted_terms: true,
+      ip,
       verification_pending: isVerificationPending,
-      created_at: new Date().toISOString(),
     };
 
-    const { error: insertError } = await supabase.from("waitlist_requests").insert(waitlistPayload);
+    const { error: insertError } = await marketingSchema.from("waitlist_requests").insert(waitlistPayload);
     if (insertError) {
       console.error("Failed to capture signup in waitlist_requests", insertError);
     }
 
     if (isVerificationPending) {
-      const { error: pendingInsertError } = await supabase.from("signup_email_failures").insert({
+      const { error: pendingInsertError } = await marketingSchema.from("signup_email_failures").insert({
         email,
         full_name: fullName,
         error_message: "Turnstile verification pending",
-        created_at: new Date().toISOString(),
+        ip,
       });
 
       if (pendingInsertError) {
@@ -167,11 +168,11 @@ export async function POST(req: NextRequest) {
       console.error("Failed to send verification email", error);
 
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const { error: failureInsertError } = await supabase.from("signup_email_failures").insert({
+      const { error: failureInsertError } = await marketingSchema.from("signup_email_failures").insert({
         email,
         full_name: fullName,
         error_message: errorMessage,
-        created_at: new Date().toISOString(),
+        ip,
       });
 
       if (failureInsertError) {
