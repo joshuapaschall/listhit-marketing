@@ -146,28 +146,58 @@ export async function POST(req: NextRequest) {
   let errorMessage: string | null = null;
 
   try {
-    const { data, error } = await supabase.auth.admin.generateLink({
-      type: "signup",
-      email,
-      options: {
-        redirectTo,
-      },
-    });
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(email);
 
-    const actionLink = data?.properties?.action_link;
-
-    if (error || !actionLink) {
-      errorMessage = error?.message || "Supabase link generation failed";
+    if (userError || !userData?.user) {
+      errorMessage = userError?.message || "User not found";
     } else {
-      try {
-        await sendVerificationEmail({
-          toEmail: email,
-          toName: "",
-          actionLink,
+      const { data, error } = await supabase.auth.admin.generateLink({
+        type: "signup",
+        email,
+        password: crypto.randomUUID(),
+        options: {
+          redirectTo,
+        },
+      });
+
+      const actionLink = data?.properties?.action_link;
+
+      if (!error && actionLink) {
+        try {
+          await sendVerificationEmail({
+            toEmail: email,
+            toName: "",
+            actionLink,
+          });
+          success = true;
+        } catch (sendError) {
+          errorMessage = sendError instanceof Error ? sendError.message : "Unknown email send error";
+        }
+      } else {
+        const { data: fallbackData, error: fallbackError } = await supabase.auth.admin.generateLink({
+          type: "magiclink",
+          email,
+          options: {
+            redirectTo,
+          },
         });
-        success = true;
-      } catch (sendError) {
-        errorMessage = sendError instanceof Error ? sendError.message : "Unknown email send error";
+
+        const fallbackLink = fallbackData?.properties?.action_link;
+
+        if (fallbackError || !fallbackLink) {
+          errorMessage = fallbackError?.message || error?.message || "Supabase link generation failed";
+        } else {
+          try {
+            await sendVerificationEmail({
+              toEmail: email,
+              toName: "",
+              actionLink: fallbackLink,
+            });
+            success = true;
+          } catch (sendError) {
+            errorMessage = sendError instanceof Error ? sendError.message : "Unknown email send error";
+          }
+        }
       }
     }
   } catch (error) {
