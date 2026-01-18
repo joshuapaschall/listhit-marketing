@@ -84,7 +84,7 @@ export async function sendVerificationEmail({ toEmail, toName, actionLink }: Sen
 
   const htmlBody = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #0f172a;">
-      <h2 style="margin-bottom: 12px;">Verify your ListHit email</h2>
+      <h2 style="margin-bottom: 12px;">Verify your ListHit account</h2>
       <p>Hi ${toName || "there"},</p>
       <p>Thanks for creating a ListHit account. Confirm your email to finish setting up your workspace.</p>
       <p style="margin: 18px 0;">
@@ -92,6 +92,7 @@ export async function sendVerificationEmail({ toEmail, toName, actionLink }: Sen
       </p>
       <p>If the button doesn’t work, copy and paste this link into your browser:<br /><a href="${actionLink}">${actionLink}</a></p>
       <p style="margin-top: 18px;">If you didn’t request this, you can ignore this email.</p>
+      <p style="margin-top: 18px;">Need help? Contact <a href="mailto:support@listhit.io">support@listhit.io</a>.</p>
       <p>— The ListHit team</p>
     </div>
   `;
@@ -104,13 +105,15 @@ Verify email: ${actionLink}
 
 If you didn’t request this, you can ignore this email.
 
+Need help? Contact support@listhit.io.
+
 — The ListHit team`;
 
   const command = new SendEmailCommand({
     Source: sourceAddress,
     Destination: { ToAddresses: [toEmail] },
     Message: {
-      Subject: { Data: "Verify your ListHit email", Charset: "UTF-8" },
+      Subject: { Data: "Verify your ListHit account", Charset: "UTF-8" },
       Body: {
         Html: { Data: htmlBody, Charset: "UTF-8" },
         Text: { Data: textBody, Charset: "UTF-8" },

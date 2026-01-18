@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "../../components/Button";
 import { TurnstileWidget, TurnstileWidgetHandle } from "../../components/TurnstileWidget";
@@ -17,9 +17,40 @@ type SignupResponse = {
   error?: string;
 };
 
+type ResendResponse = {
+  message?: string;
+};
+
+const resendCooldownMs = 30 * 1000;
+
 export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
+  const [submittedEmail, setSubmittedEmail] = useState(initialEmail);
+  const [resendStatus, setResendStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [resendMessage, setResendMessage] = useState<string>("");
+  const [resendCooldownUntil, setResendCooldownUntil] = useState<number | null>(null);
+  const [resendSecondsRemaining, setResendSecondsRemaining] = useState(0);
   const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
+
+  useEffect(() => {
+    if (!resendCooldownUntil) {
+      setResendSecondsRemaining(0);
+      return undefined;
+    }
+
+    const updateRemaining = () => {
+      const remainingMs = Math.max(resendCooldownUntil - Date.now(), 0);
+      setResendSecondsRemaining(Math.ceil(remainingMs / 1000));
+      if (remainingMs <= 0) {
+        setResendCooldownUntil(null);
+      }
+    };
+
+    updateRemaining();
+    const intervalId = setInterval(updateRemaining, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [resendCooldownUntil]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,6 +110,7 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       }
 
       form.reset();
+      setSubmittedEmail(payload.email);
       setState({
         status: "success",
         message: data.message || "Check your email to verify your account.",
@@ -92,6 +124,68 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
         message: "We could not create your account automatically. Please try again or contact support@listhit.io.",
       });
       resetTurnstile();
+    }
+  }
+
+  async function handleResend() {
+    if (resendStatus === "loading" || resendCooldownUntil) {
+      return;
+    }
+
+    if (!submittedEmail) {
+      setResendStatus("error");
+      setResendMessage("Verification unavailable. Please try again.");
+      return;
+    }
+
+    setResendStatus("loading");
+    setResendMessage("");
+
+    const timeoutMs = 1500;
+    const executePromise = turnstileRef.current?.execute() ?? Promise.resolve("");
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<string>((resolve) => {
+      timeoutId = setTimeout(() => resolve(""), timeoutMs);
+    });
+
+    const turnstileToken = await Promise.race([executePromise, timeoutPromise]);
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    if (!turnstileToken) {
+      setResendStatus("error");
+      setResendMessage("Verification unavailable. Please try again.");
+      turnstileRef.current?.reset();
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: submittedEmail, turnstileToken }),
+      });
+
+      const data = (await response.json()) as ResendResponse;
+
+      if (response.status === 429) {
+        setResendStatus("error");
+        setResendMessage("Please wait a bit before trying again.");
+      } else {
+        setResendStatus("success");
+        setResendMessage(
+          data.message || "If an account exists for that email, we’ll send a verification email shortly.",
+        );
+        setResendCooldownUntil(Date.now() + resendCooldownMs);
+      }
+    } catch (error) {
+      console.error("Resend verification failed", error);
+      setResendStatus("error");
+      setResendMessage("Verification unavailable. Please try again.");
+    } finally {
+      turnstileRef.current?.reset();
     }
   }
 
@@ -115,11 +209,31 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
             .
           </p>
         ) : null}
-        <div className="cta-row" style={{ marginTop: 12 }}>
+        <p className="muted" style={{ marginTop: 10 }}>
+          Didn&apos;t get it? Resend verification email.
+        </p>
+        <div className="cta-row" style={{ marginTop: 12, gap: 12, alignItems: "center" }}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleResend}
+            disabled={resendStatus === "loading" || !!resendCooldownUntil}
+          >
+            {resendStatus === "loading"
+              ? "Sending..."
+              : resendCooldownUntil
+                ? `Resend in ${resendSecondsRemaining}s`
+                : "Resend email"}
+          </Button>
           <Button href="/login" variant="secondary">
             Go to login
           </Button>
         </div>
+        {resendStatus !== "idle" && resendMessage ? (
+          <div className={`form-status ${resendStatus === "error" ? "error" : "success"}`}>
+            {resendMessage}
+          </div>
+        ) : null}
       </div>
     );
   }
