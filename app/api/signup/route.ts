@@ -12,14 +12,11 @@ type SignupPayload = {
   company?: string;
   acceptedTerms?: boolean;
   turnstileToken?: string;
-  verificationPending?: boolean;
 };
 
 const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
 const rateLimitMax = 5;
-const rateLimitPendingMax = 2;
 const rateLimitStore = new Map<string, { count: number; expires: number }>();
-const rateLimitPendingStore = new Map<string, { count: number; expires: number }>();
 
 function rateLimit(identifier: string, max: number, store: Map<string, { count: number; expires: number }>) {
   const now = Date.now();
@@ -50,16 +47,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }
 
-  const { fullName, email, password, company, acceptedTerms, turnstileToken, verificationPending } = body;
-  const isVerificationPending = Boolean(verificationPending) && !turnstileToken;
+  const { fullName, email, password, company, acceptedTerms, turnstileToken } = body;
 
-  if (
-    !rateLimit(
-      ip,
-      isVerificationPending ? rateLimitPendingMax : rateLimitMax,
-      isVerificationPending ? rateLimitPendingStore : rateLimitStore,
-    )
-  ) {
+  if (!rateLimit(ip, rateLimitMax, rateLimitStore)) {
     return NextResponse.json(
       { error: "You’ve reached the signup limit. Please wait a bit and try again." },
       { status: 429 },
@@ -78,11 +68,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
   }
 
-  if (!isVerificationPending) {
-    const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
-    if (!verification.success) {
-      return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
-    }
+  if (!turnstileToken) {
+    return NextResponse.json({ error: "Verification took too long. Please try again." }, { status: 400 });
+  }
+
+  const verification = await verifyTurnstileToken(turnstileToken, remoteIp);
+  if (!verification.success) {
+    return NextResponse.json({ error: verification.message || "Verification failed. Please try again." }, { status: 400 });
   }
 
   if (password.length < 8) {
@@ -132,30 +124,11 @@ export async function POST(req: NextRequest) {
       source: "signup",
       accepted_terms: true,
       ip,
-      verification_pending: isVerificationPending,
     };
 
     const { error: insertError } = await marketingSchema.from("waitlist_requests").insert(waitlistPayload);
     if (insertError) {
       console.error("Failed to capture signup in waitlist_requests", insertError);
-    }
-
-    if (isVerificationPending) {
-      const { error: pendingInsertError } = await marketingSchema.from("signup_email_failures").insert({
-        email,
-        full_name: fullName,
-        error_message: "Turnstile verification pending",
-        ip,
-      });
-
-      if (pendingInsertError) {
-        console.error("Failed to capture pending signup email", pendingInsertError);
-      }
-
-      return NextResponse.json({
-        message: "Thanks for signing up! We are finishing your signup and will email your verification link shortly.",
-        emailDelivery: "pending",
-      });
     }
 
     try {

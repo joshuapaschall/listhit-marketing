@@ -20,11 +20,16 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
     const widgetIdRef = useRef<string | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const tokenResolverRef = useRef<((token: string) => void) | null>(null);
+    const latestTokenRef = useRef<string>("");
 
     useImperativeHandle(ref, () => ({
       execute: () => {
         if (typeof window === "undefined" || !window.turnstile || !widgetIdRef.current) {
           return Promise.resolve("");
+        }
+
+        if (latestTokenRef.current) {
+          return Promise.resolve(latestTokenRef.current);
         }
 
         return new Promise((resolve) => {
@@ -36,6 +41,7 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
         if (typeof window === "undefined" || !window.turnstile || !widgetIdRef.current) {
           return;
         }
+        latestTokenRef.current = "";
         window.turnstile.reset(widgetIdRef.current as string);
       },
     }));
@@ -63,18 +69,21 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
           size: "invisible",
           appearance: "interaction-only",
           callback: (token: string) => {
+            latestTokenRef.current = token;
             if (tokenResolverRef.current) {
               tokenResolverRef.current(token);
               tokenResolverRef.current = null;
             }
           },
           "error-callback": () => {
+            latestTokenRef.current = "";
             if (tokenResolverRef.current) {
               tokenResolverRef.current("");
               tokenResolverRef.current = null;
             }
           },
           "expired-callback": () => {
+            latestTokenRef.current = "";
             if (tokenResolverRef.current) {
               tokenResolverRef.current("");
               tokenResolverRef.current = null;
