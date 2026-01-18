@@ -21,34 +21,6 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
   const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
 
-  const resolveTurnstileToken = async () => {
-    const timeoutMs = 2500;
-    const start = Date.now();
-    const executePromise = turnstileRef.current?.execute() ?? Promise.resolve("");
-
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const timeoutPromise = new Promise<string>((resolve) => {
-      timeoutId = setTimeout(() => resolve(""), timeoutMs);
-    });
-
-    const token = await Promise.race([executePromise, timeoutPromise]);
-
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-
-    if (token) {
-      return { token, verificationPending: false };
-    }
-
-    const elapsed = Date.now() - start;
-    if (elapsed < timeoutMs) {
-      await new Promise((resolve) => setTimeout(resolve, timeoutMs - elapsed));
-    }
-
-    return { token: "", verificationPending: true };
-  };
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -56,7 +28,27 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
 
     setState({ status: "loading", message: "" });
 
-    const { token: turnstileToken, verificationPending } = await resolveTurnstileToken();
+    const timeoutMs = 1500;
+    const executePromise = turnstileRef.current?.execute() ?? Promise.resolve("");
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<string>((resolve) => {
+      timeoutId = setTimeout(() => resolve(""), timeoutMs);
+    });
+
+    const turnstileToken = await Promise.race([executePromise, timeoutPromise]);
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    if (!turnstileToken) {
+      setState({
+        status: "error",
+        message: "Verification took a little longer than expected. Please try again.",
+      });
+      turnstileRef.current?.reset();
+      return;
+    }
 
     const payload = {
       fullName: formData.get("fullName")?.toString() || "",
@@ -65,7 +57,6 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       company: formData.get("company")?.toString() || "",
       acceptedTerms: formData.get("acceptedTerms") === "on",
       turnstileToken,
-      verificationPending,
     };
 
     const resetTurnstile = () => {

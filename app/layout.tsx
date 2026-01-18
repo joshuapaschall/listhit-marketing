@@ -45,6 +45,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://challenges.cloudflare.com" />
+      </head>
       <body className="page-shell">
         {showTurnstileWarning ? (
           <div className="dev-banner">
@@ -57,7 +60,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             src="https://challenges.cloudflare.com/turnstile/v0/api.js"
             async
             defer
-            strategy="afterInteractive"
+            strategy="beforeInteractive"
           />
         ) : null}
         <SiteHeader />
