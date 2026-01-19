@@ -9,16 +9,66 @@ export function ContactForm() {
   const [message, setMessage] = useState("");
   const [mailtoLink, setMailtoLink] = useState<string | null>(null);
 
+  async function requestTurnstileToken(form: HTMLFormElement) {
+    const existingToken = new FormData(form).get("cf-turnstile-response")?.toString() || "";
+    if (existingToken) {
+      return existingToken;
+    }
+
+    if (typeof window === "undefined" || !window.turnstile?.execute) {
+      return "";
+    }
+
+    try {
+      const executeResult = window.turnstile.execute();
+      if (typeof executeResult === "string") {
+        return executeResult;
+      }
+      if (executeResult && "then" in executeResult) {
+        const token = await executeResult;
+        if (token) {
+          return token;
+        }
+      }
+    } catch (error) {
+      console.error("Turnstile execution failed", error);
+    }
+
+    return new Promise<string>((resolve) => {
+      const start = Date.now();
+      const interval = window.setInterval(() => {
+        const token = new FormData(form).get("cf-turnstile-response")?.toString() || "";
+        if (token || Date.now() - start > 4000) {
+          window.clearInterval(interval);
+          resolve(token);
+        }
+      }, 200);
+    });
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const formData = new FormData(form);
-    const turnstileToken = formData.get("cf-turnstile-response")?.toString() || "";
 
     setStatus("loading");
     setMessage("");
     setMailtoLink(null);
 
+    const resetTurnstile = () => {
+      if (typeof window !== "undefined" && window.turnstile) {
+        window.turnstile.reset();
+      }
+    };
+
+    const turnstileToken = await requestTurnstileToken(form);
+    if (!turnstileToken) {
+      setStatus("error");
+      setMessage("We couldn’t verify your submission. Please try again.");
+      resetTurnstile();
+      return;
+    }
+
+    const formData = new FormData(form);
     const payload = {
       name: formData.get("name")?.toString() || "",
       email: formData.get("email")?.toString() || "",
@@ -28,12 +78,6 @@ export function ContactForm() {
       company: formData.get("company")?.toString() || "",
       website: formData.get("website")?.toString() || "",
       turnstileToken,
-    };
-
-    const resetTurnstile = () => {
-      if (typeof window !== "undefined" && window.turnstile) {
-        window.turnstile.reset();
-      }
     };
 
     try {
