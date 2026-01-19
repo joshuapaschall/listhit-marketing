@@ -18,16 +18,16 @@ const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
 const rateLimitMax = 5;
 const rateLimitStore = new Map<string, { count: number; expires: number }>();
 
-function rateLimit(identifier: string, max: number, store: Map<string, { count: number; expires: number }>) {
+function rateLimit(identifier: string) {
   const now = Date.now();
-  const record = store.get(identifier);
+  const record = rateLimitStore.get(identifier);
   if (record && record.expires > now) {
-    if (record.count >= max) return false;
+    if (record.count >= rateLimitMax) return false;
     record.count += 1;
-    store.set(identifier, record);
+    rateLimitStore.set(identifier, record);
     return true;
   }
-  store.set(identifier, { count: 1, expires: now + rateLimitWindowMs });
+  rateLimitStore.set(identifier, { count: 1, expires: now + rateLimitWindowMs });
   return true;
 }
 
@@ -40,6 +40,13 @@ export async function POST(req: NextRequest) {
   const ip = req.ip || ipHeader?.split(",")[0]?.trim() || "unknown";
   const remoteIp = ip !== "unknown" ? ip : undefined;
 
+  if (!rateLimit(ip)) {
+    return NextResponse.json(
+      { error: "You’ve reached the signup limit. Please wait a bit and try again." },
+      { status: 429 },
+    );
+  }
+
   let body: SignupPayload;
   try {
     body = await req.json();
@@ -48,13 +55,6 @@ export async function POST(req: NextRequest) {
   }
 
   const { fullName, email, password, company, acceptedTerms, turnstileToken } = body;
-
-  if (!rateLimit(ip, rateLimitMax, rateLimitStore)) {
-    return NextResponse.json(
-      { error: "You’ve reached the signup limit. Please wait a bit and try again." },
-      { status: 429 },
-    );
-  }
 
   if (!fullName || !email || !password) {
     return NextResponse.json({ error: "Full name, email, and password are required." }, { status: 400 });
@@ -69,12 +69,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (!turnstileToken) {
-    return NextResponse.json({ error: "Verification took too long. Please try again." }, { status: 400 });
+    return NextResponse.json({ error: "We couldn’t verify your submission. Please try again." }, { status: 400 });
   }
 
-  const verification = await verifyTurnstileToken(turnstileToken, remoteIp);
+  const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
   if (!verification.success) {
-    return NextResponse.json({ error: verification.message || "Verification failed. Please try again." }, { status: 400 });
+    return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
   }
 
   if (password.length < 8) {
@@ -92,7 +92,6 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-  const marketingSchema = supabase.schema("marketing");
   const redirectTo = process.env.APP_URL ?? "https://app.listhit.io";
 
   try {
@@ -123,10 +122,10 @@ export async function POST(req: NextRequest) {
       company: company || null,
       source: "signup",
       accepted_terms: true,
-      ip,
+      created_at: new Date().toISOString(),
     };
 
-    const { error: insertError } = await marketingSchema.from("waitlist_requests").insert(waitlistPayload);
+    const { error: insertError } = await supabase.from("waitlist_requests").insert(waitlistPayload);
     if (insertError) {
       console.error("Failed to capture signup in waitlist_requests", insertError);
     }
@@ -141,11 +140,11 @@ export async function POST(req: NextRequest) {
       console.error("Failed to send verification email", error);
 
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const { error: failureInsertError } = await marketingSchema.from("signup_email_failures").insert({
+      const { error: failureInsertError } = await supabase.from("signup_email_failures").insert({
         email,
         full_name: fullName,
         error_message: errorMessage,
-        ip,
+        created_at: new Date().toISOString(),
       });
 
       if (failureInsertError) {
