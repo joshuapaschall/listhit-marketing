@@ -21,16 +21,12 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
 
   async function requestTurnstileToken(form: HTMLFormElement) {
-    const existingToken = new FormData(form).get("cf-turnstile-response")?.toString() || "";
-    if (existingToken) {
-      return existingToken;
-    }
-
     if (typeof window === "undefined" || !window.turnstile?.execute) {
       return "";
     }
 
     try {
+      window.turnstile.reset();
       const executeResult = window.turnstile.execute();
       if (typeof executeResult === "string") {
         return executeResult;
@@ -45,11 +41,13 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       console.error("Turnstile execution failed", error);
     }
 
+    const timeoutMs = 3500;
+
     return new Promise<string>((resolve) => {
       const start = Date.now();
       const interval = window.setInterval(() => {
         const token = new FormData(form).get("cf-turnstile-response")?.toString() || "";
-        if (token || Date.now() - start > 4000) {
+        if (token || Date.now() - start > timeoutMs) {
           window.clearInterval(interval);
           resolve(token);
         }
@@ -71,7 +69,10 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
 
     const turnstileToken = await requestTurnstileToken(form);
     if (!turnstileToken) {
-      setState({ status: "error", message: "We couldn’t verify your submission. Please try again." });
+      setState({
+        status: "error",
+        message: "We couldn’t confirm verification in time. Please try again.",
+      });
       resetTurnstile();
       return;
     }

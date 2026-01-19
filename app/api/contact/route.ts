@@ -61,12 +61,15 @@ export async function POST(req: NextRequest) {
   }
 
   if (!turnstileToken) {
-    return NextResponse.json({ error: "We couldn’t verify your submission. Please try again." }, { status: 400 });
+    return NextResponse.json({ error: "Missing verification token" }, { status: 400 });
   }
 
-  const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
-  if (!verification.success) {
-    return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
+  const verification = await verifyTurnstileToken(turnstileToken, remoteIp);
+  if (!verification.ok) {
+    return NextResponse.json(
+      { error: verification.message || "We couldn’t verify your submission. Please try again." },
+      { status: verification.status ?? 400 },
+    );
   }
 
   if (message.trim().length < 12) {

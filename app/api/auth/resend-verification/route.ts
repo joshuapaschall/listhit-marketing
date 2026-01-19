@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendVerificationEmail } from "../../../../lib/ses";
+import { verifyTurnstileToken } from "../../../../lib/turnstile";
 
 export const runtime = "nodejs";
 
 type ResendVerificationPayload = {
   email?: string;
   fullName?: string;
+  turnstileToken?: string;
 };
 
 const rateLimitWindowMs = 10 * 60 * 1000; // 10 minutes
@@ -33,6 +35,7 @@ function isValidEmail(email: string) {
 export async function POST(req: NextRequest) {
   const ipHeader = req.headers.get("x-forwarded-for");
   const ip = req.ip || ipHeader?.split(",")[0]?.trim() || "unknown";
+  const remoteIp = ip !== "unknown" ? ip : undefined;
 
   if (!rateLimit(ip)) {
     return NextResponse.json(
@@ -48,7 +51,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }
 
-  const { email, fullName } = body;
+  const { email, fullName, turnstileToken } = body;
+
+  if (!turnstileToken) {
+    return NextResponse.json({ error: "Missing verification token" }, { status: 400 });
+  }
+
+  const verification = await verifyTurnstileToken(turnstileToken, remoteIp);
+  if (!verification.ok) {
+    return NextResponse.json(
+      { error: verification.message || "We couldn’t verify your submission. Please try again." },
+      { status: verification.status ?? 400 },
+    );
+  }
 
   if (!email) {
     return NextResponse.json({ error: "Email is required." }, { status: 400 });
