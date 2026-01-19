@@ -60,6 +60,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Name, email, subject, and message are required." }, { status: 400 });
   }
 
+  if (!turnstileToken) {
+    return NextResponse.json({ error: "We couldn’t verify your submission. Please try again." }, { status: 400 });
+  }
+
   const verification = await verifyTurnstileToken(turnstileToken ?? "", remoteIp);
   if (!verification.success) {
     return NextResponse.json({ error: verification.message || "Captcha verification failed. Please try again." }, { status: 400 });
