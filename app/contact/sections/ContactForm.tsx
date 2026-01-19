@@ -1,54 +1,74 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "../../../components/Button";
-import { TurnstileWidget, TurnstileWidgetHandle } from "../../../components/TurnstileWidget";
+import { TurnstileWidget } from "../../../components/TurnstileWidget";
 
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [mailtoLink, setMailtoLink] = useState<string | null>(null);
-  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
 
-  const resolveTurnstileToken = async () => {
-    const timeoutMs = 2500;
-    const start = Date.now();
-    const executePromise = turnstileRef.current?.execute() ?? Promise.resolve("");
+  async function requestTurnstileToken(form: HTMLFormElement) {
+    const existingToken = new FormData(form).get("cf-turnstile-response")?.toString() || "";
+    if (existingToken) {
+      return existingToken;
+    }
 
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const timeoutPromise = new Promise<string>((resolve) => {
-      timeoutId = setTimeout(() => resolve(""), timeoutMs);
+    if (typeof window === "undefined" || !window.turnstile?.execute) {
+      return "";
+    }
+
+    try {
+      const executeResult = window.turnstile.execute();
+      if (typeof executeResult === "string") {
+        return executeResult;
+      }
+      if (executeResult && "then" in executeResult) {
+        const token = await executeResult;
+        if (token) {
+          return token;
+        }
+      }
+    } catch (error) {
+      console.error("Turnstile execution failed", error);
+    }
+
+    return new Promise<string>((resolve) => {
+      const start = Date.now();
+      const interval = window.setInterval(() => {
+        const token = new FormData(form).get("cf-turnstile-response")?.toString() || "";
+        if (token || Date.now() - start > 4000) {
+          window.clearInterval(interval);
+          resolve(token);
+        }
+      }, 200);
     });
-
-    const token = await Promise.race([executePromise, timeoutPromise]);
-
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-
-    if (token) {
-      return { token, verificationPending: false };
-    }
-
-    const elapsed = Date.now() - start;
-    if (elapsed < timeoutMs) {
-      await new Promise((resolve) => setTimeout(resolve, timeoutMs - elapsed));
-    }
-
-    return { token: "", verificationPending: true };
-  };
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const formData = new FormData(form);
 
     setStatus("loading");
     setMessage("");
     setMailtoLink(null);
 
-    const { token: turnstileToken, verificationPending } = await resolveTurnstileToken();
+    const resetTurnstile = () => {
+      if (typeof window !== "undefined" && window.turnstile) {
+        window.turnstile.reset();
+      }
+    };
 
+    const turnstileToken = await requestTurnstileToken(form);
+    if (!turnstileToken) {
+      setStatus("error");
+      setMessage("We couldn’t verify your submission. Please try again.");
+      resetTurnstile();
+      return;
+    }
+
+    const formData = new FormData(form);
     const payload = {
       name: formData.get("name")?.toString() || "",
       email: formData.get("email")?.toString() || "",
@@ -58,11 +78,6 @@ export function ContactForm() {
       company: formData.get("company")?.toString() || "",
       website: formData.get("website")?.toString() || "",
       turnstileToken,
-      verificationPending,
-    };
-
-    const resetTurnstile = () => {
-      turnstileRef.current?.reset();
     };
 
     try {
@@ -136,7 +151,7 @@ export function ContactForm() {
           <label htmlFor="message">Message</label>
           <textarea className="textarea" id="message" name="message" required placeholder="Share details so we can help quickly." />
         </div>
-        <TurnstileWidget ref={turnstileRef} action="contact" />
+        <TurnstileWidget action="contact" />
         <Button type="submit" disabled={status === "loading"}>
           {status === "loading" ? "Sending..." : "Send message"}
         </Button>
