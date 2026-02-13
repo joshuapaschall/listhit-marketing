@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "../../components/Button";
-import { TurnstileWidget } from "../../components/TurnstileWidget";
+import TurnstileWidget from "../../components/TurnstileWidget";
 
 type FormState = {
   status: "idle" | "loading" | "success" | "error";
@@ -11,39 +11,25 @@ type FormState = {
 
 export function RequestAccessForm() {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const tokenRef = useRef("");
 
-  async function requestTurnstileToken(form: HTMLFormElement) {
-    const existingToken = new FormData(form).get("cf-turnstile-response")?.toString() || "";
-    if (existingToken) {
-      return existingToken;
-    }
+  const handleTurnstileToken = useCallback((token: string) => {
+    tokenRef.current = token;
+    setTurnstileToken(token);
+  }, []);
 
-    if (typeof window === "undefined" || !window.turnstile?.execute) {
-      return "";
-    }
-
-    try {
-      const executeResult = window.turnstile.execute();
-      if (typeof executeResult === "string") {
-        return executeResult;
-      }
-      if (executeResult && "then" in executeResult) {
-        const token = await executeResult;
-        if (token) {
-          return token;
-        }
-      }
-    } catch (error) {
-      console.error("Turnstile execution failed", error);
+  async function waitForTurnstileToken(maxMs = 4_000) {
+    if (tokenRef.current) {
+      return tokenRef.current;
     }
 
     return new Promise<string>((resolve) => {
       const start = Date.now();
       const interval = window.setInterval(() => {
-        const token = new FormData(form).get("cf-turnstile-response")?.toString() || "";
-        if (token || Date.now() - start > 4000) {
+        if (tokenRef.current || Date.now() - start > maxMs) {
           window.clearInterval(interval);
-          resolve(token);
+          resolve(tokenRef.current);
         }
       }, 200);
     });
@@ -54,15 +40,17 @@ export function RequestAccessForm() {
     const form = event.currentTarget;
 
     const resetTurnstile = () => {
-      if (typeof window !== "undefined" && window.turnstile) {
+      if (typeof window !== "undefined" && window.turnstile?.reset) {
         window.turnstile.reset();
       }
+      tokenRef.current = "";
+      setTurnstileToken("");
     };
 
     setState({ status: "loading", message: "" });
 
-    const turnstileToken = await requestTurnstileToken(form);
-    if (!turnstileToken) {
+    const resolvedToken = turnstileToken || (await waitForTurnstileToken());
+    if (!resolvedToken) {
       setState({ status: "error", message: "We couldn’t verify your submission. Please try again." });
       resetTurnstile();
       return;
@@ -78,7 +66,7 @@ export function RequestAccessForm() {
       agreeToTerms: formData.get("agreeToTerms") === "on",
       marketingOptIn: formData.get("marketingOptIn") === "on",
       website: formData.get("website")?.toString() || "",
-      turnstileToken,
+      turnstileToken: resolvedToken,
     };
 
     try {
@@ -177,7 +165,7 @@ export function RequestAccessForm() {
             <span>Send me product updates and announcements (optional).</span>
           </label>
         </div>
-        <TurnstileWidget action="request_access" />
+        <TurnstileWidget action="request_access" onToken={handleTurnstileToken} />
         <Button type="submit" disabled={state.status === "loading"}>
           {state.status === "loading" ? "Submitting..." : "Submit request"}
         </Button>

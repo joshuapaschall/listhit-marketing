@@ -1,46 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "../../../components/Button";
-import { TurnstileWidget } from "../../../components/TurnstileWidget";
+import TurnstileWidget from "../../../components/TurnstileWidget";
 
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [mailtoLink, setMailtoLink] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const tokenRef = useRef("");
 
-  async function requestTurnstileToken(form: HTMLFormElement) {
-    const existingToken = new FormData(form).get("cf-turnstile-response")?.toString() || "";
-    if (existingToken) {
-      return existingToken;
-    }
+  const handleTurnstileToken = useCallback((token: string) => {
+    tokenRef.current = token;
+    setTurnstileToken(token);
+  }, []);
 
-    if (typeof window === "undefined" || !window.turnstile?.execute) {
-      return "";
-    }
-
-    try {
-      const executeResult = window.turnstile.execute();
-      if (typeof executeResult === "string") {
-        return executeResult;
-      }
-      if (executeResult && "then" in executeResult) {
-        const token = await executeResult;
-        if (token) {
-          return token;
-        }
-      }
-    } catch (error) {
-      console.error("Turnstile execution failed", error);
+  async function waitForTurnstileToken(maxMs = 4_000) {
+    if (tokenRef.current) {
+      return tokenRef.current;
     }
 
     return new Promise<string>((resolve) => {
       const start = Date.now();
       const interval = window.setInterval(() => {
-        const token = new FormData(form).get("cf-turnstile-response")?.toString() || "";
-        if (token || Date.now() - start > 4000) {
+        if (tokenRef.current || Date.now() - start > maxMs) {
           window.clearInterval(interval);
-          resolve(token);
+          resolve(tokenRef.current);
         }
       }, 200);
     });
@@ -55,13 +41,15 @@ export function ContactForm() {
     setMailtoLink(null);
 
     const resetTurnstile = () => {
-      if (typeof window !== "undefined" && window.turnstile) {
+      if (typeof window !== "undefined" && window.turnstile?.reset) {
         window.turnstile.reset();
       }
+      tokenRef.current = "";
+      setTurnstileToken("");
     };
 
-    const turnstileToken = await requestTurnstileToken(form);
-    if (!turnstileToken) {
+    const resolvedToken = turnstileToken || (await waitForTurnstileToken());
+    if (!resolvedToken) {
       setStatus("error");
       setMessage("We couldn’t verify your submission. Please try again.");
       resetTurnstile();
@@ -77,7 +65,7 @@ export function ContactForm() {
       message: formData.get("message")?.toString() || "",
       company: formData.get("company")?.toString() || "",
       website: formData.get("website")?.toString() || "",
-      turnstileToken,
+      turnstileToken: resolvedToken,
     };
 
     try {
@@ -151,7 +139,7 @@ export function ContactForm() {
           <label htmlFor="message">Message</label>
           <textarea className="textarea" id="message" name="message" required placeholder="Share details so we can help quickly." />
         </div>
-        <TurnstileWidget action="contact" />
+        <TurnstileWidget action="contact" onToken={handleTurnstileToken} />
         <Button type="submit" disabled={status === "loading"}>
           {status === "loading" ? "Sending..." : "Send message"}
         </Button>
