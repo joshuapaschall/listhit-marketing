@@ -58,6 +58,9 @@ export default function TurnstileWidget({
         callback: (token: string) => {
           onToken?.(token || "");
         },
+        "refresh-expired": "auto",
+        "response-field-name": "cf-turnstile-response",
+        retry: "auto",
         size,
         sitekey: siteKey,
       });
