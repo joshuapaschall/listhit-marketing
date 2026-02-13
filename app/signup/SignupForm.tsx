@@ -20,38 +20,32 @@ type SignupResponse = {
 export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
 
-  async function requestTurnstileToken(form: HTMLFormElement) {
-    if (typeof window === "undefined" || !window.turnstile?.execute) {
+  function getTurnstileResponseValue() {
+    if (typeof document === "undefined") {
       return "";
     }
 
-    try {
-      window.turnstile.reset();
-      const executeResult = window.turnstile.execute();
-      if (typeof executeResult === "string") {
-        return executeResult;
-      }
-      if (executeResult && "then" in executeResult) {
-        const token = await executeResult;
-        if (token) {
-          return token;
-        }
-      }
-    } catch (error) {
-      console.error("Turnstile execution failed", error);
+    return document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value || "";
+  }
+
+  async function requestTurnstileToken() {
+    const existingToken = getTurnstileResponseValue();
+    if (existingToken) {
+      return existingToken;
     }
 
-    const timeoutMs = 3500;
+    const timeoutMs = 10_000;
+    const pollIntervalMs = 150;
 
     return new Promise<string>((resolve) => {
       const start = Date.now();
       const interval = window.setInterval(() => {
-        const token = new FormData(form).get("cf-turnstile-response")?.toString() || "";
-        if (token || Date.now() - start > timeoutMs) {
+        const token = getTurnstileResponseValue();
+        if (token || Date.now() - start >= timeoutMs) {
           window.clearInterval(interval);
           resolve(token);
         }
-      }, 200);
+      }, pollIntervalMs);
     });
   }
 
@@ -67,13 +61,12 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
 
     setState({ status: "loading", message: "" });
 
-    const turnstileToken = await requestTurnstileToken(form);
+    const turnstileToken = await requestTurnstileToken();
     if (!turnstileToken) {
       setState({
         status: "error",
-        message: "We couldn’t confirm verification in time. Please try again.",
+        message: "Please complete the verification check, then try creating your account again.",
       });
-      resetTurnstile();
       return;
     }
 
@@ -98,7 +91,12 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
 
       if (!response.ok) {
         setState({ status: "error", message: data.error || "Could not create your account. Please try again." });
-        resetTurnstile();
+        const isTurnstileVerificationFailure =
+          response.status === 400 && (data.error || "").toLowerCase().includes("could not verify");
+
+        if (isTurnstileVerificationFailure) {
+          resetTurnstile();
+        }
         return;
       }
 
