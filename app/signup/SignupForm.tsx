@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "../../components/Button";
 import TurnstileWidget from "../../components/TurnstileWidget";
+import { EmbeddedCheckoutStep } from "./EmbeddedCheckoutStep";
 
 type FormState = {
   status: "idle" | "loading" | "success" | "error";
@@ -17,9 +18,31 @@ type SignupResponse = {
   error?: string;
 };
 
+type BillingState = {
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+};
+
+const initialBillingState: BillingState = {
+  addressLine1: "",
+  addressLine2: "",
+  city: "",
+  state: "",
+  postalCode: "",
+  country: "US",
+};
+
 export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [accountEmail, setAccountEmail] = useState(initialEmail);
+  const [accountName, setAccountName] = useState("");
+  const [billingInfo, setBillingInfo] = useState<BillingState>(initialBillingState);
   const tokenRef = useRef("");
 
   const handleTurnstileToken = useCallback((token: string) => {
@@ -44,7 +67,7 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
     });
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleAccountSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
 
@@ -103,13 +126,15 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
         return;
       }
 
-      form.reset();
+      setAccountEmail(payload.email);
+      setAccountName(payload.fullName);
       setState({
         status: "success",
         message: data.message || "Check your email to verify your account.",
         emailDelivery: data.emailDelivery,
       });
       resetTurnstile();
+      setStep(2);
     } catch (error) {
       console.error("Signup failed", error);
       setState({
@@ -120,95 +145,196 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
     }
   }
 
-  if (state.status === "success") {
-    return (
-      <div className="card">
-        <h3>Check your email to verify</h3>
-        <p className="muted" style={{ marginTop: 6 }}>
-          {state.message} After verifying, you can sign in at{" "}
-          <Link href="/login" className="nav-link" style={{ padding: 0 }}>
-            app.listhit.io
-          </Link>
-          .
-        </p>
-        {state.emailDelivery === "pending" ? (
-          <p className="muted" style={{ marginTop: 6 }}>
-            If you don&apos;t receive the verification email soon, please contact{" "}
-            <a href="mailto:support@listhit.io" className="nav-link" style={{ padding: 0 }}>
-              support@listhit.io
-            </a>
-            .
-          </p>
-        ) : null}
-        <div className="cta-row" style={{ marginTop: 12 }}>
-          <Button href="/login" variant="secondary">
-            Go to login
-          </Button>
-        </div>
-      </div>
-    );
+  function handleBillingSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStep(3);
   }
 
   return (
     <div className="card">
       <h3>Create account</h3>
-      <form onSubmit={handleSubmit} className="form" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div className="form-row">
-          <div className="form-field">
-            <label htmlFor="fullName">Full name</label>
-            <input className="input" id="fullName" name="fullName" type="text" required placeholder="Your name" />
+      <p className="muted" style={{ marginTop: 6 }}>
+        Step {step} of 3 — ListHit Pro ($197/month) starts with a 14-day free trial.
+      </p>
+
+      {step === 1 ? (
+        <form onSubmit={handleAccountSubmit} className="form" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="fullName">Full name</label>
+              <input className="input" id="fullName" name="fullName" type="text" required placeholder="Your name" />
+            </div>
+            <div className="form-field">
+              <label htmlFor="email">Work email</label>
+              <input
+                className="input"
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder="you@company.com"
+                defaultValue={initialEmail}
+              />
+            </div>
           </div>
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="password">Password</label>
+              <input
+                className="input"
+                id="password"
+                name="password"
+                type="password"
+                required
+                minLength={8}
+                placeholder="At least 8 characters"
+              />
+            </div>
+            <div className="form-field">
+              <label htmlFor="company">Company (optional)</label>
+              <input className="input" id="company" name="company" type="text" placeholder="Company name" />
+            </div>
+          </div>
+          <label className="muted" style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+            <input type="checkbox" name="acceptedTerms" required style={{ marginTop: 4 }} />
+            <span>
+              I agree to the{" "}
+              <a href="/terms" className="nav-link" style={{ padding: 0 }}>
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="/privacy" className="nav-link" style={{ padding: 0 }}>
+                Privacy Policy
+              </a>
+              .
+            </span>
+          </label>
+          <TurnstileWidget action="signup" onToken={handleTurnstileToken} />
+          <Button type="submit" disabled={state.status === "loading"}>
+            {state.status === "loading" ? "Creating account..." : "Continue to billing"}
+          </Button>
+          {state.status === "error" && state.message ? <div className="form-status error">{state.message}</div> : null}
+        </form>
+      ) : null}
+
+      {step === 2 ? (
+        <form onSubmit={handleBillingSubmit} className="form" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <p className="muted" style={{ margin: 0 }}>
+            {state.message} Stripe will collect billing details again during checkout.
+          </p>
+          {state.emailDelivery === "pending" ? (
+            <p className="muted" style={{ margin: 0 }}>
+              If verification email does not arrive soon, contact{" "}
+              <a href="mailto:support@listhit.io" className="nav-link" style={{ padding: 0 }}>
+                support@listhit.io
+              </a>
+              .
+            </p>
+          ) : null}
           <div className="form-field">
-            <label htmlFor="email">Work email</label>
+            <label htmlFor="addressLine1">Address line 1</label>
             <input
               className="input"
-              id="email"
-              name="email"
-              type="email"
+              id="addressLine1"
+              name="addressLine1"
+              type="text"
               required
-              placeholder="you@company.com"
-              defaultValue={initialEmail}
+              value={billingInfo.addressLine1}
+              onChange={(event) => setBillingInfo((prev) => ({ ...prev, addressLine1: event.target.value }))}
             />
           </div>
-        </div>
-        <div className="form-row">
           <div className="form-field">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="addressLine2">Address line 2 (optional)</label>
             <input
               className="input"
-              id="password"
-              name="password"
-              type="password"
-              required
-              minLength={8}
-              placeholder="At least 8 characters"
+              id="addressLine2"
+              name="addressLine2"
+              type="text"
+              value={billingInfo.addressLine2}
+              onChange={(event) => setBillingInfo((prev) => ({ ...prev, addressLine2: event.target.value }))}
             />
           </div>
-          <div className="form-field">
-            <label htmlFor="company">Company (optional)</label>
-            <input className="input" id="company" name="company" type="text" placeholder="Company name" />
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="city">City</label>
+              <input
+                className="input"
+                id="city"
+                name="city"
+                type="text"
+                required
+                value={billingInfo.city}
+                onChange={(event) => setBillingInfo((prev) => ({ ...prev, city: event.target.value }))}
+              />
+            </div>
+            <div className="form-field">
+              <label htmlFor="state">State / Region</label>
+              <input
+                className="input"
+                id="state"
+                name="state"
+                type="text"
+                required
+                value={billingInfo.state}
+                onChange={(event) => setBillingInfo((prev) => ({ ...prev, state: event.target.value }))}
+              />
+            </div>
           </div>
-        </div>
-        <label className="muted" style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-          <input type="checkbox" name="acceptedTerms" required style={{ marginTop: 4 }} />{" "}
-          <span>
-            I agree to the{" "}
-            <a href="/terms" className="nav-link" style={{ padding: 0 }}>
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href="/privacy" className="nav-link" style={{ padding: 0 }}>
-              Privacy Policy
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="postalCode">Postal code</label>
+              <input
+                className="input"
+                id="postalCode"
+                name="postalCode"
+                type="text"
+                required
+                value={billingInfo.postalCode}
+                onChange={(event) => setBillingInfo((prev) => ({ ...prev, postalCode: event.target.value }))}
+              />
+            </div>
+            <div className="form-field">
+              <label htmlFor="country">Country</label>
+              <input
+                className="input"
+                id="country"
+                name="country"
+                type="text"
+                required
+                value={billingInfo.country}
+                onChange={(event) => setBillingInfo((prev) => ({ ...prev, country: event.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="cta-row">
+            <Button type="button" variant="secondary" onClick={() => setStep(1)}>
+              Back
+            </Button>
+            <Button type="submit">Continue to secure checkout</Button>
+          </div>
+        </form>
+      ) : null}
+
+      {step === 3 ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <p className="muted" style={{ margin: 0 }}>
+            Complete payment below to start your 14-day trial. You will return to this site after checkout.
+          </p>
+          <EmbeddedCheckoutStep email={accountEmail} name={accountName} />
+          <p className="muted" style={{ marginTop: 4 }}>
+            Need to edit billing details? Go back or contact support at{" "}
+            <a href="mailto:support@listhit.io" className="nav-link" style={{ padding: 0 }}>
+              support@listhit.io
             </a>
             .
-          </span>
-        </label>
-        <TurnstileWidget action="signup" onToken={handleTurnstileToken} />
-        <Button type="submit" disabled={state.status === "loading"}>
-          {state.status === "loading" ? "Creating account..." : "Create account"}
-        </Button>
-        {state.status === "error" && state.message ? <div className="form-status error">{state.message}</div> : null}
-      </form>
+          </p>
+          <div className="cta-row">
+            <Button type="button" variant="secondary" onClick={() => setStep(2)}>
+              Back to billing info
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
