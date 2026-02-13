@@ -11,11 +11,7 @@ type CheckoutSessionPayload = {
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const siteUrl = process.env.SITE_URL;
 
-const stripe =
-  stripeSecretKey &&
-  new Stripe(stripeSecretKey, {
-    apiVersion: "2025-01-27.acacia",
-  });
+const stripe = stripeSecretKey && new Stripe(stripeSecretKey);
 
 export async function POST(req: NextRequest) {
   if (!stripe) {
