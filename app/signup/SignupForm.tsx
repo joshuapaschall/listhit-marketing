@@ -20,28 +20,22 @@ type SignupResponse = {
 export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
 
-  function getTurnstileResponseValue() {
-    if (typeof document === "undefined") {
-      return "";
-    }
+  function getTurnstileToken(form: HTMLFormElement, maxMs = 10_000) {
+    const getToken = () =>
+      form.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value || "";
 
-    return document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value || "";
-  }
-
-  async function requestTurnstileToken() {
-    const existingToken = getTurnstileResponseValue();
+    const existingToken = getToken();
     if (existingToken) {
       return existingToken;
     }
 
-    const timeoutMs = 10_000;
     const pollIntervalMs = 150;
 
     return new Promise<string>((resolve) => {
       const start = Date.now();
       const interval = window.setInterval(() => {
-        const token = getTurnstileResponseValue();
-        if (token || Date.now() - start >= timeoutMs) {
+        const token = getToken();
+        if (token || Date.now() - start >= maxMs) {
           window.clearInterval(interval);
           resolve(token);
         }
@@ -61,11 +55,11 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
 
     setState({ status: "loading", message: "" });
 
-    const turnstileToken = await requestTurnstileToken();
+    const turnstileToken = await getTurnstileToken(form);
     if (!turnstileToken) {
       setState({
         status: "error",
-        message: "Please complete the verification check, then try creating your account again.",
+        message: "We couldn\'t confirm verification in time. Please try again.",
       });
       return;
     }
@@ -95,7 +89,12 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
           response.status === 400 && (data.error || "").toLowerCase().includes("could not verify");
 
         if (isTurnstileVerificationFailure) {
+          setState({
+            status: "error",
+            message: "Verification failed. Please try again.",
+          });
           resetTurnstile();
+          return;
         }
         return;
       }
