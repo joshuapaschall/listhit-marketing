@@ -35,9 +35,8 @@ export function TurnstileWidget({ action = "form", className }: TurnstileWidgetP
       className={classes}
       data-sitekey={siteKey}
       data-action={action}
-      data-size="invisible"
-      // Explicitly set the response field name so server code can consistently read it.
-      data-response-field-name="cf-turnstile-response"
+      data-appearance="interaction-only"
+      data-size="flexible"
     />
   );
 }
