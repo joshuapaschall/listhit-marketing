@@ -11,6 +11,9 @@ declare global {
           action?: string;
           appearance?: "always" | "execute" | "interaction-only";
           callback?: (token: string) => void;
+          "refresh-expired"?: "auto" | "manual" | "never";
+          "response-field-name"?: string;
+          retry?: "auto" | "never";
           size?: "normal" | "compact" | "flexible";
           sitekey: string;
         }

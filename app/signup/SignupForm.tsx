@@ -27,7 +27,14 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
     setTurnstileToken(token);
   }, []);
 
-  async function waitForTurnstileToken(maxMs = 10_000) {
+  async function waitForTurnstileToken(form: HTMLFormElement, maxMs = 2_500) {
+    const inputToken = (form.elements.namedItem("cf-turnstile-response") as HTMLInputElement | null)?.value || "";
+    if (inputToken) {
+      tokenRef.current = inputToken;
+      setTurnstileToken(inputToken);
+      return inputToken;
+    }
+
     const existingToken = tokenRef.current;
     if (existingToken) {
       return existingToken;
@@ -36,6 +43,17 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
     return new Promise<string>((resolve) => {
       const startedAt = Date.now();
       const interval = window.setInterval(() => {
+        const tokenFromInput =
+          (form.elements.namedItem("cf-turnstile-response") as HTMLInputElement | null)?.value || "";
+
+        if (tokenFromInput) {
+          window.clearInterval(interval);
+          tokenRef.current = tokenFromInput;
+          setTurnstileToken(tokenFromInput);
+          resolve(tokenFromInput);
+          return;
+        }
+
         if (tokenRef.current || Date.now() - startedAt >= maxMs) {
           window.clearInterval(interval);
           resolve(tokenRef.current);
@@ -48,21 +66,13 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
     event.preventDefault();
     const form = event.currentTarget;
 
-    const resetTurnstile = () => {
-      if (typeof window !== "undefined" && window.turnstile?.reset) {
-        window.turnstile.reset();
-      }
-      tokenRef.current = "";
-      setTurnstileToken("");
-    };
-
     setState({ status: "loading", message: "" });
 
-    const resolvedToken = turnstileToken || (await waitForTurnstileToken(10_000));
+    const resolvedToken = turnstileToken || (await waitForTurnstileToken(form, 2_500));
     if (!resolvedToken) {
       setState({
         status: "error",
-        message: "We couldn’t confirm verification in time. Please try again (disable ad blockers if enabled).",
+        message: "Please complete the verification check, then try again.",
       });
       return;
     }
@@ -87,36 +97,24 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       const data = (await response.json()) as SignupResponse;
 
       if (!response.ok) {
-        const isTurnstileVerificationFailure =
-          response.status === 400 && (data.error || "").toLowerCase().includes("could not verify");
-
-        if (isTurnstileVerificationFailure) {
-          setState({
-            status: "error",
-            message: "Verification failed. Please try again.",
-          });
-          resetTurnstile();
-          return;
-        }
-
         setState({ status: "error", message: data.error || "Could not create your account. Please try again." });
         return;
       }
 
       form.reset();
+      tokenRef.current = "";
+      setTurnstileToken("");
       setState({
         status: "success",
         message: data.message || "Check your email to verify your account.",
         emailDelivery: data.emailDelivery,
       });
-      resetTurnstile();
     } catch (error) {
       console.error("Signup failed", error);
       setState({
         status: "error",
         message: "We could not create your account automatically. Please try again or contact support@listhit.io.",
       });
-      resetTurnstile();
     }
   }
 
