@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "../../components/Button";
-import { TurnstileWidget } from "../../components/TurnstileWidget";
+import TurnstileWidget from "../../components/TurnstileWidget";
 
 type FormState = {
   status: "idle" | "loading" | "success" | "error";
@@ -19,27 +19,28 @@ type SignupResponse = {
 
 export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const tokenRef = useRef("");
 
-  function getTurnstileToken(form: HTMLFormElement, maxMs = 10_000) {
-    const getToken = () =>
-      form.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value || "";
+  const handleTurnstileToken = useCallback((token: string) => {
+    tokenRef.current = token;
+    setTurnstileToken(token);
+  }, []);
 
-    const existingToken = getToken();
+  async function waitForTurnstileToken(maxMs = 10_000) {
+    const existingToken = tokenRef.current;
     if (existingToken) {
       return existingToken;
     }
 
-    const pollIntervalMs = 150;
-
     return new Promise<string>((resolve) => {
-      const start = Date.now();
+      const startedAt = Date.now();
       const interval = window.setInterval(() => {
-        const token = getToken();
-        if (token || Date.now() - start >= maxMs) {
+        if (tokenRef.current || Date.now() - startedAt >= maxMs) {
           window.clearInterval(interval);
-          resolve(token);
+          resolve(tokenRef.current);
         }
-      }, pollIntervalMs);
+      }, 150);
     });
   }
 
@@ -48,18 +49,20 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
     const form = event.currentTarget;
 
     const resetTurnstile = () => {
-      if (typeof window !== "undefined" && window.turnstile) {
+      if (typeof window !== "undefined" && window.turnstile?.reset) {
         window.turnstile.reset();
       }
+      tokenRef.current = "";
+      setTurnstileToken("");
     };
 
     setState({ status: "loading", message: "" });
 
-    const turnstileToken = await getTurnstileToken(form);
-    if (!turnstileToken) {
+    const resolvedToken = turnstileToken || (await waitForTurnstileToken(10_000));
+    if (!resolvedToken) {
       setState({
         status: "error",
-        message: "We couldn\'t confirm verification in time. Please try again.",
+        message: "We couldn’t confirm verification in time. Please try again (disable ad blockers if enabled).",
       });
       return;
     }
@@ -71,7 +74,7 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       password: formData.get("password")?.toString() || "",
       company: formData.get("company")?.toString() || "",
       acceptedTerms: formData.get("acceptedTerms") === "on",
-      turnstileToken,
+      turnstileToken: resolvedToken,
     };
 
     try {
@@ -84,7 +87,6 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
       const data = (await response.json()) as SignupResponse;
 
       if (!response.ok) {
-        setState({ status: "error", message: data.error || "Could not create your account. Please try again." });
         const isTurnstileVerificationFailure =
           response.status === 400 && (data.error || "").toLowerCase().includes("could not verify");
 
@@ -96,6 +98,8 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
           resetTurnstile();
           return;
         }
+
+        setState({ status: "error", message: data.error || "Could not create your account. Please try again." });
         return;
       }
 
@@ -199,7 +203,7 @@ export function SignupForm({ initialEmail = "" }: { initialEmail?: string }) {
             .
           </span>
         </label>
-        <TurnstileWidget action="signup" />
+        <TurnstileWidget action="signup" onToken={handleTurnstileToken} />
         <Button type="submit" disabled={state.status === "loading"}>
           {state.status === "loading" ? "Creating account..." : "Create account"}
         </Button>

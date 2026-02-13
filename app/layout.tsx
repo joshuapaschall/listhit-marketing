@@ -57,10 +57,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         ) : null}
         {turnstileSiteKey ? (
           <Script
-            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-            async
-            defer
-            strategy="beforeInteractive"
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            strategy="afterInteractive"
           />
         ) : null}
         <SiteHeader />
